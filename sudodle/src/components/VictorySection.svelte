@@ -5,86 +5,125 @@
 </script>
 
 <div class="victory">
-  <h2>🎉 Congratulations!</h2>
+  <div class="celebration-icon">🎉</div>
+  <h2>Well done!</h2>
   <p>
-    You solved the puzzle in {guessCount} guess{guessCount === 1 ? "" : "es"}!
+    You solved it in {guessCount} guess{guessCount === 1 ? "" : "es"}!
   </p>
   <div class="victory-actions">
-    <button onclick={onShareGame} class="primary-btn">
-      Share the link to this puzzle
+    <button onclick={onNewGame} class="share-btn"> 🎯 New Game </button>
+    <button onclick={onShareGame} class="new-game-btn">
+      📤 Share this puzzle
     </button>
-    <button onclick={onNewGame} class="secondary-btn"> New Game </button>
   </div>
 </div>
 
 <style>
   .victory {
     text-align: center;
-    padding: 2rem 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    padding: 1.5rem 1.25rem;
+    background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 50%, #fef3c7 100%);
+    border: 1px solid #cbd5e1;
     border-radius: 1rem;
     margin-top: 2rem;
+    box-shadow: 0 4px 16px rgba(52, 152, 219, 0.15);
+  }
+
+  .celebration-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    animation: gentle-bounce 2s ease-in-out infinite;
   }
 
   .victory h2 {
-    color: white;
-    margin-bottom: 1rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    font-size: 1.6rem;
+    font-weight: 600;
   }
 
   .victory p {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     font-size: 1.1rem;
+    color: #475569;
+    font-weight: 500;
   }
 
   .victory-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     flex-direction: column;
   }
 
-  .victory-actions button {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-  }
-
-  .victory-actions button:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-
-  .primary-btn {
-    background: #3498db;
+  .share-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2563eb 100%);
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 0.875rem 1.5rem;
     border-radius: 0.5rem;
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
     width: 100%;
-    margin-bottom: 0.5rem;
+    box-shadow: 0 3px 8px rgba(52, 152, 219, 0.2);
   }
 
-  .primary-btn:hover {
-    background: #2980b9;
+  .share-btn:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #1d4ed8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(52, 152, 219, 0.3);
   }
 
-  .secondary-btn {
-    background: #95a5a6;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
+  .new-game-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 0.875rem 1.5rem;
     border-radius: 0.5rem;
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
     width: 100%;
+    backdrop-filter: blur(10px);
   }
 
-  .secondary-btn:hover {
-    background: #7f8c8d;
+  .new-game-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: #3498db;
+    color: #3498db;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  @keyframes gentle-bounce {
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-3px);
+    }
+    60% {
+      transform: translateY(-1px);
+    }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    .victory {
+      padding: 1.25rem 1rem;
+    }
+
+    .celebration-icon {
+      font-size: 2rem;
+    }
+
+    .victory h2 {
+      font-size: 1.5rem;
+    }
   }
 </style>
