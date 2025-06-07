@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { cyclicLatinSquare } from "./lib/generateSquare.js";
   import Settings from "./Settings.svelte";
+  import ConfirmNewGame from "./ConfirmNewGame.svelte";
 
   // State management
   let settings = {
@@ -17,6 +18,7 @@
   let currentTurn = 1;
   let maxGuesses = 6;
   let seed = null;
+  let showConfirmNewGame = false;
 
   // URL parameter handling
   onMount(() => {
@@ -106,6 +108,15 @@
     seed = null;
     previousGrids = [];
     currentTurn = 1;
+    showConfirmNewGame = false;
+  }
+
+  function showNewGameConfirm() {
+    showConfirmNewGame = true;
+  }
+
+  function hideNewGameConfirm() {
+    showConfirmNewGame = false;
   }
 
   function updateURL() {
@@ -196,10 +207,23 @@
             </div>
           </div>
         {/if}
+
+        <!-- Discrete New Game button for during gameplay -->
+        {#if gameState === "playing"}
+          <div class="bottom-actions">
+            <button on:click={showNewGameConfirm} class="discrete-btn">
+              ↻ New Game
+            </button>
+          </div>
+        {/if}
       </section>
     {/if}
   </div>
 </main>
+
+{#if showConfirmNewGame}
+  <ConfirmNewGame onConfirm={newGame} onCancel={hideNewGameConfirm} />
+{/if}
 
 <style>
   .container {
@@ -304,6 +328,29 @@
 
   .secondary-btn:hover {
     background: #7f8c8d;
+  }
+
+  .bottom-actions {
+    margin-top: 3rem;
+    text-align: center;
+  }
+
+  .discrete-btn {
+    background: transparent;
+    color: #95a5a6;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .discrete-btn:hover {
+    background: #f8f9fa;
+    color: #7f8c8d;
+    border-color: #bbb;
   }
 
   .victory {
