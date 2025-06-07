@@ -170,7 +170,6 @@
         <!-- Previous Grids -->
         {#each previousGrids as prevGrid (prevGrid.turn)}
           <div class="previous-grid">
-            <h3>Turn {prevGrid.turn}</h3>
             <!-- TODO: Replace with PreviousGrid component -->
             <div class="grid-placeholder">
               Previous Grid Component (Turn {prevGrid.turn})
@@ -193,7 +192,6 @@
           </div>
         {:else if gameState === "won"}
           <div class="final-grid">
-            <h3>Final Solution</h3>
             <!-- TODO: Replace with final solved grid component -->
             <div class="grid-placeholder">Final Solved Grid</div>
           </div>
