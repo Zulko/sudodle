@@ -1,6 +1,10 @@
 <script>
   import { onMount } from "svelte";
-  import { cyclicLatinSquare, checkLatinSquare } from "./lib/latinSquares.js";
+  import {
+    cyclicLatinSquare,
+    uniformRandomLatinSquare,
+    checkLatinSquare,
+  } from "./lib/latinSquares.js";
   import Settings from "./components/Settings.svelte";
   import ConfirmNewGame from "./components/ConfirmNewGame.svelte";
   import VictorySection from "./components/VictorySection.svelte";
@@ -54,12 +58,10 @@
 
   // Grid generation functions
   function generateSolutionGrid() {
-    // TODO: Implement proper random latin square generation
-    // For now, use cyclic latin square as placeholder
     if (!seed) {
       seed = Math.floor(Math.random() * 1000000);
     }
-    solutionGrid = cyclicLatinSquare(settings.gridSize);
+    solutionGrid = uniformRandomLatinSquare(settings.gridSize, seed);
   }
 
   function initializeCurrentGrid() {
