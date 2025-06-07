@@ -1,4 +1,6 @@
 <script>
+  import { onMount } from "svelte";
+
   export let currentGrid;
   export let visualCues = true;
   export let previousGrids = [];
@@ -14,6 +16,16 @@
 
   // Get the grid size
   $: gridSize = currentGrid.length;
+
+  // Utility function to prevent default when possible
+  // This prevents console errors when preventDefault() is called on passive event listeners
+  function preventDefaultIfPossible(event) {
+    try {
+      event.preventDefault();
+    } catch (e) {
+      // Ignore passive event listener error - preventDefault is not possible
+    }
+  }
 
   // Force reactivity for tile classes when hover state changes
   $: hoveredPosition,
@@ -31,7 +43,7 @@
   }
 
   function handleDragOver(event) {
-    event.preventDefault();
+    preventDefaultIfPossible(event);
     event.dataTransfer.dropEffect = "move";
 
     // Find which tile is being hovered over
@@ -51,7 +63,7 @@
   }
 
   function handleDragEnter(event) {
-    event.preventDefault();
+    preventDefaultIfPossible(event);
 
     // Find which tile is being entered
     let targetElement = event.target;
@@ -64,7 +76,6 @@
         const targetRow = Math.floor(targetIndex / gridSize);
         const targetCol = targetIndex % gridSize;
         hoveredPosition = { row: targetRow, col: targetCol };
-        console.log("Hover position set:", hoveredPosition);
       }
     }
   }
@@ -80,7 +91,7 @@
   }
 
   function handleDrop(event, targetRow, targetCol) {
-    event.preventDefault();
+    preventDefaultIfPossible(event);
     swapTiles(targetRow, targetCol);
     hoveredPosition = null;
   }
@@ -101,7 +112,7 @@
   }
 
   function handleTouchMove(event) {
-    event.preventDefault(); // Prevent scrolling
+    event.preventDefault(); // Prevent scrolling - now safe since we use non-passive listeners
     if (isDragging && draggedPosition) {
       currentTouchPosition = {
         x: event.touches[0].clientX,
@@ -211,7 +222,6 @@
       )
     ) {
       classes.push("drag-hover");
-      console.log(`Adding drag-hover class to tile at ${row},${col}`);
     }
 
     // Add swap highlight class if this tile was recently swapped
@@ -263,6 +273,23 @@
 
     return classes.join(" ");
   }
+
+  // Set up non-passive touch event listeners to prevent console errors
+  onMount(() => {
+    const gridElement = document.querySelector(".grid");
+    if (gridElement) {
+      gridElement.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+    }
+
+    return () => {
+      // Cleanup on component destroy
+      if (gridElement) {
+        gridElement.removeEventListener("touchmove", handleTouchMove);
+      }
+    };
+  });
 </script>
 
 <div class="grid-container">
@@ -278,7 +305,6 @@
           ondragleave={handleDragLeave}
           ondrop={(e) => handleDrop(e, rowIndex, colIndex)}
           ontouchstart={(e) => handleTouchStart(e, rowIndex, colIndex)}
-          ontouchmove={handleTouchMove}
           ontouchend={handleTouchEnd}
           role="gridcell"
           tabindex="0"
