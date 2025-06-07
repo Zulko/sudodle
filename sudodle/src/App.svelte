@@ -1,10 +1,10 @@
 <script>
   import { onMount } from "svelte";
   import { cyclicLatinSquare } from "./lib/generateSquare.js";
-  import Settings from "./Settings.svelte";
-  import ConfirmNewGame from "./ConfirmNewGame.svelte";
-  import VictorySection from "./VictorySection.svelte";
-  import CurrentGrid from "./CurrentGrid.svelte";
+  import Settings from "./components/Settings.svelte";
+  import ConfirmNewGame from "./components/ConfirmNewGame.svelte";
+  import VictorySection from "./components/VictorySection.svelte";
+  import CurrentGrid from "./components/CurrentGrid.svelte";
 
   // State management
   let settings = {
@@ -241,11 +241,6 @@
     font-size: 2.5rem;
   }
 
-  h2 {
-    color: #34495e;
-    margin-bottom: 1rem;
-  }
-
   h3 {
     color: #7f8c8d;
     margin: 1rem 0 0.5rem 0;
@@ -261,19 +256,6 @@
     margin-bottom: 1.5rem;
     color: #555;
     text-align: left;
-  }
-
-  .game-info {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 0.5rem;
-  }
-
-  .game-info p {
-    margin: 0.25rem 0;
-    color: #555;
   }
 
   .previous-grid,
@@ -312,23 +294,6 @@
 
   .primary-btn:hover {
     background: #2980b9;
-  }
-
-  .secondary-btn {
-    background: #95a5a6;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    width: 100%;
-  }
-
-  .secondary-btn:hover {
-    background: #7f8c8d;
   }
 
   .bottom-actions {
