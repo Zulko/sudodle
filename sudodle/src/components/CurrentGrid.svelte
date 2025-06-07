@@ -349,7 +349,7 @@
   }
 
   .tile {
-    background: white;
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -357,8 +357,8 @@
     font-weight: 600;
     color: #2c3e50;
     border: 1px solid #e1e5e9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     cursor: grab;
     transition: all 0.2s ease;
     user-select: none;
@@ -368,6 +368,7 @@
   .tile:hover {
     background: #f8f9fa;
     transform: scale(1.05);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
   }
 
   .tile:active {
@@ -432,19 +433,27 @@
 
   /* Visual cues */
   .tile.correct-previous {
-    background: #d4edda;
-    color: #155724;
+    background: #28a745;
+    color: #ffffff;
   }
 
   .tile.incorrect-previous {
-    color: #d2691e;
+    background: #fff3cd;
+    color: #856404;
     font-weight: 700;
   }
 
   .tile.duplicate {
-    color: #dc3545;
+    background: #ffffff;
+    color: #e67e22;
     font-weight: 700;
-    background: #f8d7da;
+  }
+
+  /* Combination: both previously incorrect AND duplicate */
+  .tile.incorrect-previous.duplicate {
+    background: #fff3cd;
+    color: #e67e22;
+    font-weight: 700;
   }
 
   /* Responsive adjustments */
