@@ -139,19 +139,17 @@
   <div class="container">
     <h1>Sudodle</h1>
 
-    {#if gameState === "setup"}
-      <section class="setup">
-        <div class="rules">
-          <p>
-            Guess the correct grid knowing that each number appears only once in
-            each row and column (a Latin square). After each guess, you'll get
-            feedback on which tiles are correct. Use this information to make
-            your next guess!
-          </p>
-        </div>
+    <div class="rules">
+      <p>
+        Guess the correct grid knowing that each number appears only once in
+        each row and column (a Latin square). After each guess, you'll get
+        feedback on which tiles are correct. Use this information to make your
+        next guess!
+      </p>
+    </div>
 
-        <Settings {settings} onStartGame={startGame} />
-      </section>
+    {#if gameState === "setup"}
+      <Settings {settings} onStartGame={startGame} />
     {/if}
 
     {#if gameState === "playing" || gameState === "won"}
@@ -289,6 +287,24 @@
 
   .check-btn {
     margin-top: 1rem;
+  }
+
+  .primary-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .primary-btn:hover {
+    background: #2980b9;
   }
 
   .secondary-btn {
