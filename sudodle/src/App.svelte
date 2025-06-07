@@ -4,6 +4,7 @@
   import Settings from "./Settings.svelte";
   import ConfirmNewGame from "./ConfirmNewGame.svelte";
   import VictorySection from "./VictorySection.svelte";
+  import CurrentGrid from "./CurrentGrid.svelte";
 
   // State management
   let settings = {
@@ -180,8 +181,12 @@
         <!-- Current/Final Grid -->
         {#if gameState === "playing"}
           <div class="current-grid">
-            <!-- TODO: Replace with CurrentGrid component -->
-            <div class="grid-placeholder">Current Grid Component</div>
+            <CurrentGrid
+              bind:currentGrid
+              visualCues={settings.visualCues}
+              {previousGrids}
+              {solutionGrid}
+            />
             <button onclick={checkGrid} class="primary-btn check-btn">
               Check ({maxGuesses - currentTurn} guesses left)
             </button>
