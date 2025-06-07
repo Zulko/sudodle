@@ -265,12 +265,6 @@
     font-size: 2.5rem;
   }
 
-  h3 {
-    color: #7f8c8d;
-    margin: 1rem 0 0.5rem 0;
-    font-size: 1rem;
-  }
-
   .rules {
     margin-bottom: 2rem;
   }

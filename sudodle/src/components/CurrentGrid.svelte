@@ -532,7 +532,13 @@
     }
 
     .tile {
-      font-size: clamp(0.8rem, 3.5vw, 1.2rem);
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+    }
+
+    .dragging-tile {
+      font-size: 1.5rem;
+      width: 60px;
+      height: 60px;
     }
   }
 
