@@ -252,6 +252,19 @@ function findLatinSquareViolations(square) {
     });
 }
 
+/**
+ * Check if a square is a valid Latin square.
+ * 
+ * A Latin square is valid if each number 1..N appears exactly once in each row
+ * and exactly once in each column.
+ *
+ * @param {number[][]} square - The square to check (NxN array of numbers 1..N)
+ * @returns {boolean} True if the square is a valid Latin square, false otherwise
+ */
+function checkLatinSquare(square) {
+    const violations = findLatinSquareViolations(square);
+    return violations.length === 0;
+}
 
 // Export functions for use in other modules
 export {
@@ -259,5 +272,6 @@ export {
     uniformRandomLatinSquare,
     backtrackedRandomLatinSquare,
     findLatinSquareViolations,
+    checkLatinSquare,
     SeededRandom
 };

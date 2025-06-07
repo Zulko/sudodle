@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { cyclicLatinSquare } from "./lib/generateSquare.js";
+  import { cyclicLatinSquare, checkLatinSquare } from "./lib/latinSquares.js";
   import Settings from "./components/Settings.svelte";
   import ConfirmNewGame from "./components/ConfirmNewGame.svelte";
   import VictorySection from "./components/VictorySection.svelte";
@@ -24,6 +24,10 @@
   let showConfirmNewGame = false;
   let isTransitioning = false;
   let currentGridFeedback = null;
+
+  // Reactive statement to check if check button should be disabled
+  $: isCheckDisabled =
+    isTransitioning || (settings.strictMode && !checkLatinSquare(currentGrid));
 
   // URL parameter handling
   onMount(() => {
@@ -235,11 +239,13 @@
               class="primary-btn check-btn {isTransitioning
                 ? 'transitioning'
                 : ''}"
-              disabled={isTransitioning}
+              disabled={isCheckDisabled}
             >
               {isTransitioning
                 ? "Checking..."
-                : `Check (${maxGuesses - currentTurn} guesses left)`}
+                : settings.strictMode && !checkLatinSquare(currentGrid)
+                  ? "Cannot check - fix the non-unique numbers"
+                  : `Check (${maxGuesses - currentTurn} guesses left)`}
             </button>
           </div>
         {/if}
