@@ -35,17 +35,20 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
+          cache-dependency-path: "sudodle/package-lock.json"
       - name: Install dependencies
         run: npm ci
+        working-directory: ./sudodle
       - name: Build
         run: npm run build
+        working-directory: ./sudodle
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload dist folder
-          path: "./dist"
+          # Upload dist folder from sudodle directory
+          path: "./sudodle/dist"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
