@@ -31,7 +31,12 @@
 
   // Reactive statement to check if check button should be disabled
   $: isCheckDisabled =
-    isTransitioning || (settings.strictMode && !checkLatinSquare(currentGrid));
+    isTransitioning ||
+    (settings.strictMode && !checkLatinSquare(currentGrid)) ||
+    maxGuesses - currentTurn <= 0;
+
+  // Reactive statement to check if out of tries
+  $: outOfTries = gameState === "playing" && maxGuesses - currentTurn <= 0;
 
   // URL parameter handling
   onMount(() => {
@@ -206,10 +211,8 @@
 
     <div class="rules">
       <p>
-        Guess the correct order of the numbers in the grid, knowing that each
-        number should appears exactly once in each row and column. After each
-        guess, you'll can check which tiles are correctly placed, and use the
-        information to make your next guess!
+        Find the correct arrangement of numbers where each appears once in every
+        row and column. After each guess, see which tiles are correctly placed!
       </p>
     </div>
 
@@ -247,7 +250,9 @@
                 ? "Checking..."
                 : settings.strictMode && !checkLatinSquare(currentGrid)
                   ? "Cannot check - fix the non-unique numbers"
-                  : `Check (${maxGuesses - currentTurn} guesses left)`}
+                  : maxGuesses - currentTurn <= 0
+                    ? "Oh no! You ran out of guesses!"
+                    : `Check (${maxGuesses - currentTurn} guesses left)`}
             </button>
           </div>
         {/if}
@@ -264,7 +269,10 @@
         <!-- Discrete New Game button for during gameplay -->
         {#if gameState === "playing"}
           <div class="bottom-actions">
-            <button onclick={showNewGameConfirm} class="discrete-btn">
+            <button
+              onclick={showNewGameConfirm}
+              class="discrete-btn {outOfTries ? 'out-of-tries' : ''}"
+            >
               ↻ New Game
             </button>
           </div>
@@ -356,21 +364,33 @@
   }
 
   .discrete-btn {
-    background: transparent;
-    color: #95a5a6;
-    border: 1px solid #ddd;
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
     padding: 0.5rem 1rem;
     border-radius: 0.25rem;
-    font-size: 0.85rem;
-    font-weight: 400;
+    font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
   }
 
   .discrete-btn:hover {
-    background: #f8f9fa;
-    color: #7f8c8d;
-    border-color: #bbb;
+    background: #e9ecef;
+    color: #495057;
+    border-color: #adb5bd;
+  }
+
+  .discrete-btn.out-of-tries {
+    background: #3498db;
+    color: white;
+    border: 1px solid #3498db;
+    font-weight: 500;
+  }
+
+  .discrete-btn.out-of-tries:hover {
+    background: #2980b9;
+    border-color: #2980b9;
   }
 
   /* Responsive design */
