@@ -189,8 +189,10 @@
 
   /* Focus styles for accessibility */
   .tile:focus {
-    outline: 2px solid #3498db;
-    outline-offset: 2px;
+    outline: none;
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      0 0 0 2px rgba(52, 152, 219, 0.3);
   }
 
   /* Drag feedback */
