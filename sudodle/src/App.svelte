@@ -154,11 +154,6 @@
 
     {#if gameState === "playing" || gameState === "won"}
       <section class="game">
-        <div class="game-info">
-          <p>Turn {currentTurn} of {maxGuesses}</p>
-          <p>Grid Size: {settings.gridSize}x{settings.gridSize}</p>
-        </div>
-
         <!-- Previous Grids -->
         {#each previousGrids as prevGrid (prevGrid.turn)}
           <div class="previous-grid">
@@ -173,11 +168,10 @@
         <!-- Current Grid -->
         {#if gameState === "playing"}
           <div class="current-grid">
-            <h3>Current Turn ({currentTurn})</h3>
             <!-- TODO: Replace with CurrentGrid component -->
             <div class="grid-placeholder">Current Grid Component</div>
             <button on:click={checkGrid} class="primary-btn check-btn">
-              Check
+              Check ({maxGuesses - currentTurn} guesses left)
             </button>
           </div>
         {/if}
@@ -243,18 +237,6 @@
     margin-bottom: 1.5rem;
     color: #555;
     text-align: left;
-  }
-
-  .setup {
-    margin-bottom: 2rem;
-  }
-
-  .setup .rules {
-    margin-bottom: 2rem;
-  }
-
-  .setup .settings {
-    margin-bottom: 0;
   }
 
   .game-info {
