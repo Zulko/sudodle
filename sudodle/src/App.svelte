@@ -181,7 +181,7 @@
           <div class="current-grid">
             <!-- TODO: Replace with CurrentGrid component -->
             <div class="grid-placeholder">Current Grid Component</div>
-            <button on:click={checkGrid} class="primary-btn check-btn">
+            <button onclick={checkGrid} class="primary-btn check-btn">
               Check ({maxGuesses - currentTurn} guesses left)
             </button>
           </div>
@@ -198,10 +198,10 @@
                 : "es"}!
             </p>
             <div class="victory-actions">
-              <button on:click={shareGame} class="primary-btn">
+              <button onclick={shareGame} class="primary-btn">
                 Share Game
               </button>
-              <button on:click={newGame} class="secondary-btn">
+              <button onclick={newGame} class="secondary-btn">
                 New Game
               </button>
             </div>
@@ -211,7 +211,7 @@
         <!-- Discrete New Game button for during gameplay -->
         {#if gameState === "playing"}
           <div class="bottom-actions">
-            <button on:click={showNewGameConfirm} class="discrete-btn">
+            <button onclick={showNewGameConfirm} class="discrete-btn">
               ↻ New Game
             </button>
           </div>

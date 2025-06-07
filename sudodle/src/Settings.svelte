@@ -9,23 +9,48 @@
       <label class="setting-label">Grid Size and options</label>
       <div class="radio-group">
         <label class="radio-item">
-          <input type="radio" bind:group={settings.gridSize} value={5} />
+          <input
+            type="radio"
+            bind:group={settings.gridSize}
+            value={5}
+            aria-label="Grid size 5x5"
+          />
           <span>5×5</span>
         </label>
         <label class="radio-item">
-          <input type="radio" bind:group={settings.gridSize} value={6} />
+          <input
+            type="radio"
+            bind:group={settings.gridSize}
+            value={6}
+            aria-label="Grid size 6x6"
+          />
           <span>6×6</span>
         </label>
         <label class="radio-item">
-          <input type="radio" bind:group={settings.gridSize} value={7} />
+          <input
+            type="radio"
+            bind:group={settings.gridSize}
+            value={7}
+            aria-label="Grid size 7x7"
+          />
           <span>7×7</span>
         </label>
         <label class="radio-item">
-          <input type="radio" bind:group={settings.gridSize} value={8} />
+          <input
+            type="radio"
+            bind:group={settings.gridSize}
+            value={8}
+            aria-label="Grid size 8x8"
+          />
           <span>8×8</span>
         </label>
         <label class="radio-item">
-          <input type="radio" bind:group={settings.gridSize} value={9} />
+          <input
+            type="radio"
+            bind:group={settings.gridSize}
+            value={9}
+            aria-label="Grid size 9x9"
+          />
           <span>9×9</span>
         </label>
       </div>
@@ -35,7 +60,11 @@
       <div class="switch-setting">
         <div class="switch-container">
           <label class="switch">
-            <input type="checkbox" bind:checked={settings.strictMode} />
+            <input
+              type="checkbox"
+              bind:checked={settings.strictMode}
+              aria-label="Strict mode toggle"
+            />
             <span class="slider"></span>
           </label>
           <span class="switch-text"
@@ -49,7 +78,11 @@
       <div class="switch-setting">
         <div class="switch-container">
           <label class="switch">
-            <input type="checkbox" bind:checked={settings.visualCues} />
+            <input
+              type="checkbox"
+              bind:checked={settings.visualCues}
+              aria-label="Visual cues toggle"
+            />
             <span class="slider"></span>
           </label>
           <span class="switch-text">Highlight correct/incorrect positions</span>
@@ -58,7 +91,7 @@
     </div>
   </div>
 
-  <button on:click={onStartGame} class="start-btn">
+  <button onclick={onStartGame} class="start-btn">
     <span>🎯</span>
     Start Game
   </button>

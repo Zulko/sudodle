@@ -1,24 +1,53 @@
 <script>
   export let onConfirm;
   export let onCancel;
+
+  function handleKeydown(event) {
+    if (event.key === "Escape") {
+      onCancel();
+    }
+  }
+
+  function handleModalClick() {
+    // Prevent modal from closing when clicking on the modal content
+  }
 </script>
 
-<div class="modal-overlay" on:click={onCancel}>
-  <div class="modal" on:click|stopPropagation>
+<svelte:window onkeydown={handleKeydown} />
+
+<div
+  class="modal-overlay"
+  onclick={onCancel}
+  onkeydown={onCancel}
+  role="dialog"
+  aria-labelledby="modal-title"
+  aria-modal="true"
+  tabindex="0"
+>
+  <div
+    class="modal"
+    onclick={handleModalClick}
+    onkeydown={handleModalClick}
+    role="dialog"
+    aria-labelledby="modal-title"
+    aria-modal="true"
+    tabindex="0"
+  >
     <div class="modal-header">
-      <h3>Start New Game?</h3>
+      <h3 id="modal-title">Start a New Game?</h3>
     </div>
 
     <div class="modal-content">
-      <p>
-        Are you sure you want to start a new game? Your current progress will be
-        lost.
-      </p>
+      <p>Your current progress will be lost.</p>
     </div>
 
     <div class="modal-actions">
-      <button on:click={onCancel} class="cancel-btn"> Cancel </button>
-      <button on:click={onConfirm} class="confirm-btn"> Start New Game </button>
+      <button onclick={onCancel} onkeydown={onCancel} class="cancel-btn">
+        Cancel
+      </button>
+      <button onclick={onConfirm} onkeydown={onConfirm} class="confirm-btn">
+        Start New Game
+      </button>
     </div>
   </div>
 </div>
