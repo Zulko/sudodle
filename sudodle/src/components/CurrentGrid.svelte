@@ -233,7 +233,19 @@
     // If we have immediate feedback, show it and return early
     if (feedback && feedback[row] && feedback[row][col] !== undefined) {
       if (feedback[row][col]) {
-        classes.push("feedback-correct");
+        // Check if this tile was already correct in previous turns
+        const wasCorrectInPrevious = previousGrids.some(
+          (prevGrid) =>
+            prevGrid.feedback &&
+            prevGrid.feedback[row] &&
+            prevGrid.feedback[row][col]
+        );
+
+        if (wasCorrectInPrevious) {
+          classes.push("feedback-correct");
+        } else {
+          classes.push("feedback-correct-new");
+        }
       }
       // Don't add any class for incorrect tiles - leave them as default
       return classes.join(" ");
@@ -473,6 +485,12 @@
 
   /* Immediate feedback styles */
   .tile.feedback-correct {
+    background: #28a745;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .tile.feedback-correct-new {
     background: #28a745;
     color: #ffffff;
     font-weight: 700;
