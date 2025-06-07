@@ -206,10 +206,10 @@
 
     <div class="rules">
       <p>
-        Guess the correct grid knowing that each number appears only once in
-        each row and column (a Latin square). After each guess, you'll get
-        feedback on which tiles are correct. Use this information to make your
-        next guess!
+        Guess the correct order of the numbers in the grid, knowing that each
+        number should appears exactly once in each row and column. After each
+        guess, you'll can check which tiles are correctly placed, and use the
+        information to make your next guess!
       </p>
     </div>
 
@@ -306,22 +306,11 @@
   }
 
   .previous-grid,
-  .current-grid,
-  .final-grid {
+  .current-grid {
     margin-bottom: 2rem;
     /* Prevent layout shifts during transitions */
     position: relative;
     width: 100%;
-  }
-
-  .grid-placeholder {
-    background: #f0f0f0;
-    border: 2px dashed #ccc;
-    padding: 2rem;
-    text-align: center;
-    border-radius: 0.5rem;
-    color: #888;
-    margin-bottom: 1rem;
   }
 
   .check-btn {
