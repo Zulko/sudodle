@@ -21,7 +21,7 @@
   let solutionGrid = [];
   let currentGrid = [];
   let previousGrids = [];
-  let gameState = "setup"; // 'setup', 'playing', 'won'
+  let gameState = "playing"; // 'setup', 'playing', 'won'
   let currentTurn = 1;
   let maxGuesses = 6;
   let seed = null;
@@ -55,10 +55,7 @@
       seed = parseInt(urlParams.get("seed"));
     }
 
-    // If we have URL parameters, skip to game
-    if (urlParams.toString()) {
-      startGame();
-    }
+    startGame();
   });
 
   // Grid generation functions
