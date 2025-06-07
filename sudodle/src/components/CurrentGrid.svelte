@@ -428,9 +428,9 @@
   .tile.drag-hover {
     background: #e3f2fd !important;
     border-color: #2196f3 !important;
-    /* Small raise effect with proper isolation */
-    transform: translateZ(0) translateY(-2px) !important;
-    box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3) !important;
+    /* More pronounced raise effect with proper isolation */
+    transform: translateZ(0) translateY(-4px) scale(1.02) !important;
+    box-shadow: 0 8px 16px rgba(52, 152, 219, 0.4) !important;
     z-index: 10;
     transition: all 0.15s ease !important;
   }
