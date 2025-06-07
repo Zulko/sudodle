@@ -99,7 +99,7 @@
     }
 
     .tile {
-      font-size: clamp(0.8rem, 3.5vw, 1.2rem);
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
     }
   }
 </style>
