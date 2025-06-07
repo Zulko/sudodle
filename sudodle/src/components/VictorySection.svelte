@@ -10,7 +10,9 @@
     You solved the puzzle in {guessCount} guess{guessCount === 1 ? "" : "es"}!
   </p>
   <div class="victory-actions">
-    <button onclick={onShareGame} class="primary-btn"> Share Game </button>
+    <button onclick={onShareGame} class="primary-btn">
+      Share the link to this puzzle
+    </button>
     <button onclick={onNewGame} class="secondary-btn"> New Game </button>
   </div>
 </div>
