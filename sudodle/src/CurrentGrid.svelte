@@ -7,6 +7,8 @@
   let draggedTile = null;
   let draggedPosition = null;
   let touchStartPosition = null;
+  let isDragging = false;
+  let currentTouchPosition = null;
 
   // Get the grid size
   $: gridSize = currentGrid.length;
@@ -35,10 +37,21 @@
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
     };
+    isDragging = true;
+    currentTouchPosition = {
+      x: event.touches[0].clientX,
+      y: event.touches[0].clientY,
+    };
   }
 
   function handleTouchMove(event) {
     event.preventDefault(); // Prevent scrolling
+    if (isDragging && draggedPosition) {
+      currentTouchPosition = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY,
+      };
+    }
   }
 
   function handleTouchEnd(event) {
@@ -64,6 +77,8 @@
 
     // Reset touch state
     touchStartPosition = null;
+    isDragging = false;
+    currentTouchPosition = null;
   }
 
   function swapTiles(targetRow, targetCol) {
@@ -86,6 +101,16 @@
 
   function getTileClasses(row, col, value) {
     let classes = ["tile"];
+
+    // Add dragging class if this tile is being dragged
+    if (
+      isDragging &&
+      draggedPosition &&
+      draggedPosition.row === row &&
+      draggedPosition.col === col
+    ) {
+      classes.push("dragging");
+    }
 
     if (!visualCues) return classes.join(" ");
 
@@ -156,6 +181,17 @@
       {/each}
     {/each}
   </div>
+
+  <!-- Dragging tile overlay -->
+  {#if isDragging && currentTouchPosition && draggedTile}
+    <div
+      class="dragging-tile"
+      style="left: {currentTouchPosition.x -
+        25}px; top: {currentTouchPosition.y - 25}px;"
+    >
+      {draggedTile}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -202,6 +238,30 @@
   .tile:active {
     cursor: grabbing;
     transform: scale(0.95);
+  }
+
+  /* Dragging states */
+  .tile.dragging {
+    opacity: 0.3;
+  }
+
+  .dragging-tile {
+    position: fixed;
+    width: 50px;
+    height: 50px;
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2c3e50;
+    pointer-events: none;
+    z-index: 1000;
+    transform: scale(1.1);
   }
 
   /* Visual cues */
