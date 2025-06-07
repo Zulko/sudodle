@@ -177,7 +177,7 @@
           </div>
         {/each}
 
-        <!-- Current Grid -->
+        <!-- Current/Final Grid -->
         {#if gameState === "playing"}
           <div class="current-grid">
             <!-- TODO: Replace with CurrentGrid component -->
@@ -185,6 +185,12 @@
             <button onclick={checkGrid} class="primary-btn check-btn">
               Check ({maxGuesses - currentTurn} guesses left)
             </button>
+          </div>
+        {:else if gameState === "won"}
+          <div class="final-grid">
+            <h3>Final Solution</h3>
+            <!-- TODO: Replace with final solved grid component -->
+            <div class="grid-placeholder">Final Solved Grid</div>
           </div>
         {/if}
 
@@ -266,7 +272,8 @@
   }
 
   .previous-grid,
-  .current-grid {
+  .current-grid,
+  .final-grid {
     margin-bottom: 2rem;
   }
 
