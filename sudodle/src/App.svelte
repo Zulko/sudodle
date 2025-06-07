@@ -113,6 +113,14 @@
         currentGrid = currentGrid.map((row) => [...row]);
         currentGridFeedback = null;
         isTransitioning = false;
+
+        // Scroll to bottom to keep current grid in view
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 50); // Small delay to ensure DOM has updated
       }, 1000);
     }
   }
