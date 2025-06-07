@@ -5,6 +5,7 @@
   import ConfirmNewGame from "./components/ConfirmNewGame.svelte";
   import VictorySection from "./components/VictorySection.svelte";
   import CurrentGrid from "./components/CurrentGrid.svelte";
+  import PreviousGrid from "./components/PreviousGrid.svelte";
 
   // State management
   let settings = {
@@ -170,10 +171,7 @@
         <!-- Previous Grids -->
         {#each previousGrids as prevGrid (prevGrid.turn)}
           <div class="previous-grid">
-            <!-- TODO: Replace with PreviousGrid component -->
-            <div class="grid-placeholder">
-              Previous Grid Component (Turn {prevGrid.turn})
-            </div>
+            <PreviousGrid previousGrid={prevGrid} />
           </div>
         {/each}
 
