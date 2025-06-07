@@ -583,4 +583,117 @@
   .tile:where([draggable="true"]:hover) {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .instruction-label {
+      color: #aaa;
+    }
+
+    .dragging-tile {
+      background: #2a2a2a;
+      border: 1px solid #555;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .tile {
+      background: #2a2a2a;
+      color: #ffffff;
+      border: 1px solid #555;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .tile:hover {
+      background: #333;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .tile.drag-hover {
+      background: #1a4c7d !important;
+      border-color: #2196f3 !important;
+      box-shadow: 0 8px 16px rgba(52, 152, 219, 0.6) !important;
+    }
+
+    @keyframes swapPulse {
+      0% {
+        transform: translateZ(0) scale(1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      50% {
+        transform: translateZ(0) scale(1.15);
+        box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5);
+      }
+      100% {
+        transform: translateZ(0) scale(1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    /* Visual cues for dark mode */
+    .tile.correct-previous {
+      background: #28a745;
+      color: #ffffff;
+    }
+
+    .tile.incorrect-previous {
+      background: #5a4a1a;
+      color: #ffc107;
+      font-weight: 700;
+    }
+
+    .tile.duplicate {
+      background: #2a2a2a;
+      color: #ff8c42;
+      font-weight: 700;
+    }
+
+    /* Immediate feedback styles for dark mode */
+    .tile.feedback-correct {
+      background: #28a745;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .tile.feedback-correct-new {
+      background: #28a745;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    @keyframes correctPulse {
+      0% {
+        transform: translateZ(0) scale(1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+      50% {
+        transform: translateZ(0) scale(1.1);
+        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.6);
+      }
+      100% {
+        transform: translateZ(0) scale(1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    /* Combination: both previously incorrect AND duplicate */
+    .tile.incorrect-previous.duplicate {
+      background: #5a4a1a;
+      color: #ff8c42;
+      font-weight: 700;
+    }
+
+    /* Focus styles for dark mode */
+    .tile:focus {
+      outline: none;
+      box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.3),
+        0 0 0 2px rgba(52, 152, 219, 0.5);
+    }
+
+    /* Drag feedback for dark mode */
+    .tile:where([draggable="true"]:hover) {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+  }
 </style>

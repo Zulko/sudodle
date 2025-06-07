@@ -126,4 +126,40 @@
       font-size: 1.5rem;
     }
   }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .victory {
+      background: linear-gradient(
+        135deg,
+        #1a365d 0%,
+        #2d3748 50%,
+        #744210 100%
+      );
+      border: 1px solid #4a5568;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .victory h2 {
+      color: #ffffff;
+    }
+
+    .victory p {
+      color: #cbd5e0;
+    }
+
+    .new-game-btn {
+      background: rgba(45, 55, 72, 0.9);
+      color: #cbd5e0;
+      border: 1px solid #4a5568;
+      backdrop-filter: blur(10px);
+    }
+
+    .new-game-btn:hover {
+      background: rgba(45, 55, 72, 1);
+      border-color: #3498db;
+      color: #3498db;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+  }
 </style>

@@ -393,4 +393,56 @@
       font-size: 2rem;
     }
   }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .container {
+      background-color: #0f0f0f;
+      color: #ffffff;
+    }
+
+    h1 {
+      color: #ffffff;
+    }
+
+    .rules p {
+      color: #ccc;
+    }
+
+    .primary-btn:disabled,
+    .primary-btn.transitioning {
+      background: #2a2a2a;
+      color: #888;
+      border: 1px solid #555;
+    }
+
+    .primary-btn:disabled:hover,
+    .primary-btn.transitioning:hover {
+      background: #2a2a2a;
+      color: #888;
+    }
+
+    .discrete-btn {
+      background: #2a2a2a;
+      color: #aaa;
+      border: 1px solid #555;
+    }
+
+    .discrete-btn:hover {
+      background: #333;
+      color: #ccc;
+      border-color: #777;
+    }
+
+    .discrete-btn.out-of-tries {
+      background: #3498db;
+      color: white;
+      border: 1px solid #3498db;
+    }
+
+    .discrete-btn.out-of-tries:hover {
+      background: #2980b9;
+      border-color: #2980b9;
+    }
+  }
 </style>

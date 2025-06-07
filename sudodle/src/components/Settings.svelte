@@ -331,4 +331,60 @@
   .switch input:checked + .slider:before {
     transform: translateX(26px);
   }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .modal-overlay {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal {
+      background: #1e1e1e;
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid #444;
+    }
+
+    .modal-header h3 {
+      color: #ffffff;
+    }
+
+    .cancel-btn {
+      background: transparent;
+      color: #aaa;
+      border: 1px solid #555;
+    }
+
+    .cancel-btn:hover {
+      background: #2a2a2a;
+      color: #ccc;
+      border-color: #777;
+    }
+
+    .radio-item {
+      border: 2px solid #555;
+      background: #2a2a2a;
+      color: #ffffff;
+    }
+
+    .radio-item:hover {
+      border-color: #3498db;
+      background: #333;
+    }
+
+    .switch-text {
+      color: #ccc;
+    }
+
+    .slider {
+      background-color: #555;
+    }
+
+    .slider:before {
+      background-color: #fff;
+    }
+  }
 </style>

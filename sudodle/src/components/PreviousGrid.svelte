@@ -102,4 +102,23 @@
       font-size: clamp(1.2rem, 5vw, 1.8rem);
     }
   }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .turn-label {
+      color: #aaa;
+    }
+
+    .tile {
+      background: #2a2a2a;
+      color: #ffffff;
+      border: 1px solid #444;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .tile.correct {
+      background: #52c965;
+      color: #ffffff;
+    }
+  }
 </style>
