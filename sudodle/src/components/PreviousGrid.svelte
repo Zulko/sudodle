@@ -4,6 +4,12 @@
   // Get the grid size from the grid data
   $: gridSize = previousGrid.grid.length;
 
+  function getOrdinal(num) {
+    const suffix = ["th", "st", "nd", "rd"];
+    const v = num % 100;
+    return num + (suffix[(v - 20) % 10] || suffix[v] || suffix[0]);
+  }
+
   function getTileClasses(row, col) {
     let classes = ["tile"];
 
@@ -21,7 +27,7 @@
 </script>
 
 <div class="grid-container">
-  <div class="turn-label">Turn {previousGrid.turn}</div>
+  <div class="turn-label">{getOrdinal(previousGrid.turn)} guess</div>
   <div class="grid" style="--grid-size: {gridSize}">
     {#each previousGrid.grid as row, rowIndex}
       {#each row as value, colIndex}
@@ -61,7 +67,7 @@
     background: transparent;
     padding: 4px;
     border-radius: 8px;
-    width: min(100%, 350px);
+    width: min(90%, 315px);
     aspect-ratio: 1;
   }
 
@@ -81,7 +87,7 @@
   }
 
   .tile.correct {
-    background: #28a745;
+    background: #52c965;
     color: #ffffff;
   }
 

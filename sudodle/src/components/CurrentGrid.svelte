@@ -295,6 +295,7 @@
 </script>
 
 <div class="grid-container">
+  <div class="instruction-label">Drag tiles to swap them</div>
   <div class="grid" style="--grid-size: {gridSize}">
     {#each currentGrid as row, rowIndex}
       {#each row as value, colIndex}
@@ -334,8 +335,17 @@
 <style>
   .grid-container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     margin: 1rem 0;
+  }
+
+  .instruction-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
   }
 
   .grid {
