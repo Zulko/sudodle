@@ -260,14 +260,16 @@
       classes.push("incorrect-previous");
     }
 
-    // Check for duplicates in same row or column
+    // Check for duplicates in same row or column (only if not correct at position)
+    const isCorrectAtPosition =
+      solutionGrid[row] && solutionGrid[row][col] === value;
     const hasDuplicateInRow =
       currentGrid[row].filter((v) => v === value).length > 1;
     const hasDuplicateInCol = currentGrid.some(
       (r) => r[col] === value && r !== currentGrid[row]
     );
 
-    if (hasDuplicateInRow || hasDuplicateInCol) {
+    if (!isCorrectAtPosition && (hasDuplicateInRow || hasDuplicateInCol)) {
       classes.push("duplicate");
     }
 
