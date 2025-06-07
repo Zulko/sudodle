@@ -46,7 +46,7 @@
         Cancel
       </button>
       <button onclick={onConfirm} onkeydown={onConfirm} class="confirm-btn">
-        Start New Game
+        New Game
       </button>
     </div>
   </div>
@@ -101,7 +101,7 @@
     padding: 1rem 1.5rem 1.5rem 1.5rem;
     display: flex;
     gap: 1rem;
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   .cancel-btn {
