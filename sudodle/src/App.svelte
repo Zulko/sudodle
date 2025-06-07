@@ -86,6 +86,15 @@
     const allCorrect = feedback.every((row) => row.every((cell) => cell));
 
     if (allCorrect) {
+      // Add the winning grid to previous grids with all-correct feedback
+      previousGrids = [
+        ...previousGrids,
+        {
+          grid: currentGrid.map((row) => [...row]),
+          feedback: feedback,
+          turn: currentTurn,
+        },
+      ];
       gameState = "won";
     } else if (currentTurn >= maxGuesses) {
       // Game over - could add this state later
@@ -216,11 +225,6 @@
                 : `Check (${maxGuesses - currentTurn} guesses left)`}
             </button>
           </div>
-        {:else if gameState === "won"}
-          <div class="final-grid">
-            <!-- TODO: Replace with final solved grid component -->
-            <div class="grid-placeholder">Final Solved Grid</div>
-          </div>
         {/if}
 
         <!-- Victory Screen -->
@@ -228,7 +232,7 @@
           <VictorySection
             onNewGame={newGame}
             onShareGame={shareGame}
-            guessCount={previousGrids.length + 1}
+            guessCount={previousGrids.length}
           />
         {/if}
 
