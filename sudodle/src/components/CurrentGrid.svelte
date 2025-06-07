@@ -404,6 +404,8 @@
     will-change: transform;
     /* Ensure transforms don't break layout */
     position: relative;
+    /* Create isolation context to contain transforms */
+    isolation: isolate;
   }
 
   .tile:hover {
@@ -426,12 +428,11 @@
   .tile.drag-hover {
     background: #e3f2fd !important;
     border-color: #2196f3 !important;
-    /* Keep original border width to avoid layout shifts */
-    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3) !important;
+    /* Small raise effect with proper isolation */
+    transform: translateZ(0) translateY(-2px) !important;
+    box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3) !important;
     z-index: 10;
     transition: all 0.15s ease !important;
-    /* No transforms to avoid layout shifts */
-    transform: translateZ(0) !important;
   }
 
   /* Recently swapped tiles pulse effect */
