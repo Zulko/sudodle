@@ -402,17 +402,19 @@
     /* Prevent layout shifts from transforms */
     transform: translateZ(0);
     will-change: transform;
+    /* Ensure transforms don't break layout */
+    position: relative;
   }
 
   .tile:hover {
     background: #f8f9fa;
-    transform: translateZ(0) scale(1.05);
+    transform: translateZ(0) scale(1.02);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
   }
 
   .tile:active {
     cursor: grabbing;
-    transform: translateZ(0) scale(0.95);
+    transform: translateZ(0) scale(0.98);
   }
 
   /* Dragging states */
@@ -420,15 +422,16 @@
     opacity: 0.3;
   }
 
-  /* Hover state during drag operations */
+  /* Hover state during drag operations - different styles for different grid sizes */
   .tile.drag-hover {
-    transform: translateZ(0) translateY(-6px) scale(1.08) !important;
-    box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3) !important;
     background: #e3f2fd !important;
     border-color: #2196f3 !important;
-    border-width: 2px !important;
+    /* Keep original border width to avoid layout shifts */
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3) !important;
     z-index: 10;
     transition: all 0.15s ease !important;
+    /* No transforms to avoid layout shifts */
+    transform: translateZ(0) !important;
   }
 
   /* Recently swapped tiles pulse effect */
