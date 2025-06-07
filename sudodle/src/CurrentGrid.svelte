@@ -7,6 +7,7 @@
   let draggedTile = null;
   let draggedPosition = null;
   let hoveredPosition = null;
+  let recentlySwapped = [];
   let touchStartPosition = null;
   let isDragging = false;
   let currentTouchPosition = null;
@@ -18,6 +19,7 @@
   $: hoveredPosition,
     draggedPosition,
     isDragging,
+    recentlySwapped,
     (() => {
       // This reactive statement ensures tiles re-render when hover state changes
     })();
@@ -167,6 +169,17 @@
       newGrid[draggedPosition.row][draggedPosition.col] = temp;
 
       currentGrid = newGrid;
+
+      // Highlight the swapped tiles
+      recentlySwapped = [
+        { row: targetRow, col: targetCol },
+        { row: draggedPosition.row, col: draggedPosition.col },
+      ];
+
+      // Clear the highlight after animation
+      setTimeout(() => {
+        recentlySwapped = [];
+      }, 600);
     }
 
     draggedTile = null;
@@ -199,6 +212,11 @@
     ) {
       classes.push("drag-hover");
       console.log(`Adding drag-hover class to tile at ${row},${col}`);
+    }
+
+    // Add swap highlight class if this tile was recently swapped
+    if (recentlySwapped.some((pos) => pos.row === row && pos.col === col)) {
+      classes.push("recently-swapped");
     }
 
     if (!visualCues) return classes.join(" ");
@@ -345,6 +363,26 @@
     border-width: 2px !important;
     z-index: 10;
     transition: all 0.15s ease !important;
+  }
+
+  /* Recently swapped tiles pulse effect */
+  .tile.recently-swapped {
+    animation: swapPulse 0.6s ease-out;
+  }
+
+  @keyframes swapPulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+      transform: scale(1.15);
+      box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
   }
 
   .dragging-tile {
