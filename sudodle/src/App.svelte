@@ -86,16 +86,33 @@
     const allCorrect = feedback.every((row) => row.every((cell) => cell));
 
     if (allCorrect) {
-      // Add the winning grid to previous grids with all-correct feedback
-      previousGrids = [
-        ...previousGrids,
-        {
-          grid: currentGrid.map((row) => [...row]),
-          feedback: feedback,
-          turn: currentTurn,
-        },
-      ];
-      gameState = "won";
+      // Immediately show feedback on current grid
+      currentGridFeedback = feedback;
+      isTransitioning = true;
+
+      // After 1 second, move winning grid to previous grids and show victory
+      setTimeout(() => {
+        // Add the winning grid to previous grids with all-correct feedback
+        previousGrids = [
+          ...previousGrids,
+          {
+            grid: currentGrid.map((row) => [...row]),
+            feedback: feedback,
+            turn: currentTurn,
+          },
+        ];
+        gameState = "won";
+        currentGridFeedback = null;
+        isTransitioning = false;
+
+        // Scroll to victory section
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 100); // Small delay to ensure DOM has updated
+      }, 1000);
     } else if (currentTurn >= maxGuesses) {
       // Game over - could add this state later
       gameState = "won"; // For now, treat as won
