@@ -361,6 +361,8 @@
     align-items: center;
     justify-content: center;
     margin: 1rem 0;
+    /* Prevent layout shifts during feedback */
+    position: relative;
   }
 
   .instruction-label {
@@ -380,6 +382,9 @@
     border-radius: 8px;
     width: min(100%, 350px);
     aspect-ratio: 1;
+    /* Ensure stable positioning during animations */
+    position: relative;
+    transform: translateZ(0); /* Create a new stacking context */
   }
 
   .tile {
@@ -397,17 +402,20 @@
     transition: all 0.2s ease;
     user-select: none;
     touch-action: none;
+    /* Prevent layout shifts from transforms */
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   .tile:hover {
     background: #f8f9fa;
-    transform: scale(1.05);
+    transform: translateZ(0) scale(1.05);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
   }
 
   .tile:active {
     cursor: grabbing;
-    transform: scale(0.95);
+    transform: translateZ(0) scale(0.95);
   }
 
   /* Dragging states */
@@ -417,7 +425,7 @@
 
   /* Hover state during drag operations */
   .tile.drag-hover {
-    transform: translateY(-6px) scale(1.08) !important;
+    transform: translateZ(0) translateY(-6px) scale(1.08) !important;
     box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3) !important;
     background: #e3f2fd !important;
     border-color: #2196f3 !important;
@@ -433,15 +441,15 @@
 
   @keyframes swapPulse {
     0% {
-      transform: scale(1);
+      transform: translateZ(0) scale(1);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     50% {
-      transform: scale(1.15);
+      transform: translateZ(0) scale(1.15);
       box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
     }
     100% {
-      transform: scale(1);
+      transform: translateZ(0) scale(1);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   }
@@ -462,7 +470,7 @@
     color: #2c3e50;
     pointer-events: none;
     z-index: 1000;
-    transform: scale(1.1);
+    transform: translateZ(0) scale(1.1);
   }
 
   /* Visual cues */
@@ -499,15 +507,15 @@
 
   @keyframes correctPulse {
     0% {
-      transform: scale(1);
+      transform: translateZ(0) scale(1);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
     50% {
-      transform: scale(1.1);
+      transform: translateZ(0) scale(1.1);
       box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
     }
     100% {
-      transform: scale(1);
+      transform: translateZ(0) scale(1);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
   }

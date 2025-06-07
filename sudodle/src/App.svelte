@@ -118,9 +118,9 @@
         setTimeout(() => {
           window.scrollTo({
             top: document.documentElement.scrollHeight,
-            behavior: "smooth",
+            behavior: "instant",
           });
-        }, 50); // Small delay to ensure DOM has updated
+        }, 2); // Small delay to ensure DOM has updated
       }, 1000);
     }
   }
@@ -204,11 +204,17 @@
               {solutionGrid}
               feedback={currentGridFeedback}
             />
-            {#if !isTransitioning}
-              <button onclick={checkGrid} class="primary-btn check-btn">
-                Check ({maxGuesses - currentTurn} guesses left)
-              </button>
-            {/if}
+            <button
+              onclick={checkGrid}
+              class="primary-btn check-btn {isTransitioning
+                ? 'transitioning'
+                : ''}"
+              disabled={isTransitioning}
+            >
+              {isTransitioning
+                ? "Checking..."
+                : `Check (${maxGuesses - currentTurn} guesses left)`}
+            </button>
           </div>
         {:else if gameState === "won"}
           <div class="final-grid">
@@ -280,6 +286,9 @@
   .current-grid,
   .final-grid {
     margin-bottom: 2rem;
+    /* Prevent layout shifts during transitions */
+    position: relative;
+    width: 100%;
   }
 
   .grid-placeholder {
@@ -312,6 +321,21 @@
 
   .primary-btn:hover {
     background: #2980b9;
+  }
+
+  .primary-btn:disabled,
+  .primary-btn.transitioning {
+    background: #ffffff;
+    color: #7f8c8d;
+    border: 1px solid #ddd;
+    cursor: not-allowed;
+    opacity: 1;
+  }
+
+  .primary-btn:disabled:hover,
+  .primary-btn.transitioning:hover {
+    background: #ffffff;
+    color: #7f8c8d;
   }
 
   .bottom-actions {
