@@ -5,6 +5,7 @@
   export let visualCues = true;
   export let previousGrids = [];
   export let solutionGrid = [];
+  export let feedback = null;
 
   let draggedTile = null;
   let draggedPosition = null;
@@ -227,6 +228,15 @@
     // Add swap highlight class if this tile was recently swapped
     if (recentlySwapped.some((pos) => pos.row === row && pos.col === col)) {
       classes.push("recently-swapped");
+    }
+
+    // If we have immediate feedback, show it and return early
+    if (feedback && feedback[row] && feedback[row][col] !== undefined) {
+      if (feedback[row][col]) {
+        classes.push("feedback-correct");
+      }
+      // Don't add any class for incorrect tiles - leave them as default
+      return classes.join(" ");
     }
 
     if (!visualCues) return classes.join(" ");
@@ -459,6 +469,29 @@
     background: #ffffff;
     color: #e67e22;
     font-weight: 700;
+  }
+
+  /* Immediate feedback styles */
+  .tile.feedback-correct {
+    background: #28a745;
+    color: #ffffff;
+    font-weight: 700;
+    animation: correctPulse 0.6s ease-out;
+  }
+
+  @keyframes correctPulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
   }
 
   /* Combination: both previously incorrect AND duplicate */

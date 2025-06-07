@@ -22,6 +22,8 @@
   let maxGuesses = 6;
   let seed = null;
   let showConfirmNewGame = false;
+  let isTransitioning = false;
+  let currentGridFeedback = null;
 
   // URL parameter handling
   onMount(() => {
@@ -89,20 +91,29 @@
       // Game over - could add this state later
       gameState = "won"; // For now, treat as won
     } else {
-      // Add current grid to previous grids with feedback
-      previousGrids = [
-        ...previousGrids,
-        {
-          grid: currentGrid.map((row) => [...row]),
-          feedback: feedback,
-          turn: currentTurn,
-        },
-      ];
+      // Immediately show feedback on current grid
+      currentGridFeedback = feedback;
+      isTransitioning = true;
 
-      // Start next turn
-      currentTurn++;
-      // Initialize next grid with current grid as starting point
-      currentGrid = currentGrid.map((row) => [...row]);
+      // After 1 second, move current grid to previous grids and show new grid
+      setTimeout(() => {
+        // Add current grid to previous grids with feedback
+        previousGrids = [
+          ...previousGrids,
+          {
+            grid: currentGrid.map((row) => [...row]),
+            feedback: feedback,
+            turn: currentTurn,
+          },
+        ];
+
+        // Start next turn
+        currentTurn++;
+        // Initialize next grid with current grid as starting point
+        currentGrid = currentGrid.map((row) => [...row]);
+        currentGridFeedback = null;
+        isTransitioning = false;
+      }, 1000);
     }
   }
 
@@ -183,10 +194,13 @@
               visualCues={settings.visualCues}
               {previousGrids}
               {solutionGrid}
+              feedback={currentGridFeedback}
             />
-            <button onclick={checkGrid} class="primary-btn check-btn">
-              Check ({maxGuesses - currentTurn} guesses left)
-            </button>
+            {#if !isTransitioning}
+              <button onclick={checkGrid} class="primary-btn check-btn">
+                Check ({maxGuesses - currentTurn} guesses left)
+              </button>
+            {/if}
           </div>
         {:else if gameState === "won"}
           <div class="final-grid">
