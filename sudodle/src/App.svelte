@@ -142,8 +142,8 @@
       <section class="setup">
         <div class="rules">
           <p>
-            Guess the correct grid knowing each number appears only once in each
-            row and column (a Latin square). After each guess, you'll get
+            Guess the correct grid knowing that each number appears only once in
+            each row and column (a Latin square). After each guess, you'll get
             feedback on which tiles are correct. Use this information to make
             your next guess!
           </p>
@@ -224,12 +224,12 @@
                 </div>
               </div>
             </div>
-
-            <button on:click={startGame} class="start-btn">
-              <span>🎯</span>
-              Start Game
-            </button>
           </div>
+
+          <button on:click={startGame} class="start-btn">
+            <span>🎯</span>
+            Start Game
+          </button>
         </div>
       </section>
     {/if}
@@ -317,7 +317,6 @@
   }
 
   .rules {
-    text-align: center;
     margin-bottom: 2rem;
   }
 
@@ -325,6 +324,7 @@
     line-height: 1.6;
     margin-bottom: 1.5rem;
     color: #555;
+    text-align: left;
   }
 
   .setup {
@@ -506,7 +506,7 @@
     cursor: pointer;
     transition: all 0.2s;
     width: 100%;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
