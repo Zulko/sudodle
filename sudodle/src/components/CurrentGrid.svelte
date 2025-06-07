@@ -18,6 +18,32 @@
   // Get the grid size
   $: gridSize = currentGrid.length;
 
+  // Calculate dragging tile size based on grid size
+  $: draggingTileSize = (() => {
+    const sizes = {
+      4: 80,
+      5: 70,
+      6: 58,
+      7: 50,
+      8: 44,
+      9: 39,
+    };
+    return sizes[gridSize] || 60; // fallback to 60px
+  })();
+
+  // Mobile sizes
+  $: mobileDraggingTileSize = (() => {
+    const mobileSizes = {
+      4: 65,
+      5: 55,
+      6: 48,
+      7: 42,
+      8: 37,
+      9: 33,
+    };
+    return mobileSizes[gridSize] || 50; // fallback to 50px
+  })();
+
   // Utility function to prevent default when possible
   // This prevents console errors when preventDefault() is called on passive event listeners
   function preventDefaultIfPossible(event) {
@@ -344,7 +370,9 @@
     <div
       class="dragging-tile"
       style="left: {currentTouchPosition.x -
-        25}px; top: {currentTouchPosition.y - 25}px;"
+        draggingTileSize / 2}px; top: {currentTouchPosition.y -
+        draggingTileSize /
+          2}px; width: {draggingTileSize}px; height: {draggingTileSize}px;"
     >
       {draggedTile}
     </div>
@@ -382,6 +410,24 @@
     /* Ensure stable positioning during animations */
     position: relative;
     transform: translateZ(0); /* Create a new stacking context */
+  }
+
+  .dragging-tile {
+    position: fixed;
+    /* Size will be set via inline styles */
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    font-weight: 600;
+    color: #2c3e50;
+    pointer-events: none;
+    z-index: 1000;
+    transform: translateZ(0);
   }
 
   .tile {
@@ -455,25 +501,6 @@
     }
   }
 
-  .dragging-tile {
-    position: fixed;
-    width: 50px;
-    height: 50px;
-    background: white;
-    border: 1px solid #e1e5e9;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #2c3e50;
-    pointer-events: none;
-    z-index: 1000;
-    transform: translateZ(0) scale(1.1);
-  }
-
   /* Visual cues */
   .tile.correct-previous {
     background: #28a745;
@@ -540,9 +567,7 @@
     }
 
     .dragging-tile {
-      font-size: 1.5rem;
-      width: 60px;
-      height: 60px;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
     }
   }
 
