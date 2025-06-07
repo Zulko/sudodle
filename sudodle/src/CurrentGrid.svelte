@@ -124,8 +124,8 @@
     grid-template-columns: repeat(var(--grid-size), 1fr);
     grid-template-rows: repeat(var(--grid-size), 1fr);
     gap: 2px;
-    background: #2c3e50;
-    padding: 8px;
+    background: transparent;
+    padding: 4px;
     border-radius: 8px;
     width: min(100%, 350px);
     aspect-ratio: 1;
@@ -139,7 +139,9 @@
     font-size: clamp(1rem, 4vw, 1.5rem);
     font-weight: 600;
     color: #2c3e50;
-    border-radius: 4px;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: grab;
     transition: all 0.2s ease;
     user-select: none;
