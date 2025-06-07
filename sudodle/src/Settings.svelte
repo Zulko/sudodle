@@ -8,51 +8,17 @@
     <div class="setting-row">
       <label class="setting-label">Grid Size and options</label>
       <div class="radio-group">
-        <label class="radio-item">
-          <input
-            type="radio"
-            bind:group={settings.gridSize}
-            value={5}
-            aria-label="Grid size 5x5"
-          />
-          <span>5×5</span>
-        </label>
-        <label class="radio-item">
-          <input
-            type="radio"
-            bind:group={settings.gridSize}
-            value={6}
-            aria-label="Grid size 6x6"
-          />
-          <span>6×6</span>
-        </label>
-        <label class="radio-item">
-          <input
-            type="radio"
-            bind:group={settings.gridSize}
-            value={7}
-            aria-label="Grid size 7x7"
-          />
-          <span>7×7</span>
-        </label>
-        <label class="radio-item">
-          <input
-            type="radio"
-            bind:group={settings.gridSize}
-            value={8}
-            aria-label="Grid size 8x8"
-          />
-          <span>8×8</span>
-        </label>
-        <label class="radio-item">
-          <input
-            type="radio"
-            bind:group={settings.gridSize}
-            value={9}
-            aria-label="Grid size 9x9"
-          />
-          <span>9×9</span>
-        </label>
+        {#each [4, 5, 6, 7, 8, 9] as size}
+          <label class="radio-item">
+            <input
+              type="radio"
+              bind:group={settings.gridSize}
+              value={size}
+              aria-label="Grid size {size}x{size}"
+            />
+            <span>{size}×{size}</span>
+          </label>
+        {/each}
       </div>
     </div>
 
@@ -133,7 +99,7 @@
   .radio-item {
     display: flex;
     align-items: center;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.6rem;
     border: 2px solid #ddd;
     border-radius: 0.25rem;
     cursor: pointer;
