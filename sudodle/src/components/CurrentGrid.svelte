@@ -52,12 +52,11 @@
 
     // Make sure we're targeting a tile element
     if (targetElement && targetElement.classList.contains("tile")) {
-      const tiles = Array.from(document.querySelectorAll(".tile"));
-      const targetIndex = tiles.indexOf(targetElement);
+      // Use data attributes instead of querySelector index for more reliable positioning
+      const targetRow = parseInt(targetElement.getAttribute("data-row"));
+      const targetCol = parseInt(targetElement.getAttribute("data-col"));
 
-      if (targetIndex >= 0) {
-        const targetRow = Math.floor(targetIndex / gridSize);
-        const targetCol = targetIndex % gridSize;
+      if (!isNaN(targetRow) && !isNaN(targetCol)) {
         hoveredPosition = { row: targetRow, col: targetCol };
       }
     }
@@ -70,12 +69,11 @@
     let targetElement = event.target;
 
     if (targetElement && targetElement.classList.contains("tile")) {
-      const tiles = Array.from(document.querySelectorAll(".tile"));
-      const targetIndex = tiles.indexOf(targetElement);
+      // Use data attributes instead of querySelector index for more reliable positioning
+      const targetRow = parseInt(targetElement.getAttribute("data-row"));
+      const targetCol = parseInt(targetElement.getAttribute("data-col"));
 
-      if (targetIndex >= 0) {
-        const targetRow = Math.floor(targetIndex / gridSize);
-        const targetCol = targetIndex % gridSize;
+      if (!isNaN(targetRow) && !isNaN(targetCol)) {
         hoveredPosition = { row: targetRow, col: targetCol };
       }
     }
@@ -127,12 +125,11 @@
       );
 
       if (elementBelow && elementBelow.classList.contains("tile")) {
-        const tiles = Array.from(document.querySelectorAll(".tile"));
-        const targetIndex = tiles.indexOf(elementBelow);
+        // Use data attributes instead of querySelector index for more reliable positioning
+        const targetRow = parseInt(elementBelow.getAttribute("data-row"));
+        const targetCol = parseInt(elementBelow.getAttribute("data-col"));
 
-        if (targetIndex >= 0) {
-          const targetRow = Math.floor(targetIndex / gridSize);
-          const targetCol = targetIndex % gridSize;
+        if (!isNaN(targetRow) && !isNaN(targetCol)) {
           hoveredPosition = { row: targetRow, col: targetCol };
         }
       } else {
@@ -151,13 +148,11 @@
     );
 
     if (elementBelow && elementBelow.classList.contains("tile")) {
-      // Find the grid position of the target tile
-      const tiles = Array.from(document.querySelectorAll(".tile"));
-      const targetIndex = tiles.indexOf(elementBelow);
+      // Use data attributes instead of querySelector index for more reliable positioning
+      const targetRow = parseInt(elementBelow.getAttribute("data-row"));
+      const targetCol = parseInt(elementBelow.getAttribute("data-col"));
 
-      if (targetIndex >= 0) {
-        const targetRow = Math.floor(targetIndex / gridSize);
-        const targetCol = targetIndex % gridSize;
+      if (!isNaN(targetRow) && !isNaN(targetCol)) {
         swapTiles(targetRow, targetCol);
       }
     }
@@ -324,6 +319,8 @@
         <div
           class={getTileClasses(rowIndex, colIndex, value)}
           draggable="true"
+          data-row={rowIndex}
+          data-col={colIndex}
           ondragstart={(e) => handleDragStart(e, rowIndex, colIndex)}
           ondragover={handleDragOver}
           ondragenter={handleDragEnter}
