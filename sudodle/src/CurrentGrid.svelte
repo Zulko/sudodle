@@ -6,6 +6,7 @@
 
   let draggedTile = null;
   let draggedPosition = null;
+  let touchStartPosition = null;
 
   // Get the grid size
   $: gridSize = currentGrid.length;
@@ -23,7 +24,49 @@
 
   function handleDrop(event, targetRow, targetCol) {
     event.preventDefault();
+    swapTiles(targetRow, targetCol);
+  }
 
+  // Touch event handlers
+  function handleTouchStart(event, row, col) {
+    draggedTile = currentGrid[row][col];
+    draggedPosition = { row, col };
+    touchStartPosition = {
+      x: event.touches[0].clientX,
+      y: event.touches[0].clientY,
+    };
+  }
+
+  function handleTouchMove(event) {
+    event.preventDefault(); // Prevent scrolling
+  }
+
+  function handleTouchEnd(event) {
+    if (!draggedPosition || !touchStartPosition) return;
+
+    const touch = event.changedTouches[0];
+    const elementBelow = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY
+    );
+
+    if (elementBelow && elementBelow.classList.contains("tile")) {
+      // Find the grid position of the target tile
+      const tiles = Array.from(document.querySelectorAll(".tile"));
+      const targetIndex = tiles.indexOf(elementBelow);
+
+      if (targetIndex >= 0) {
+        const targetRow = Math.floor(targetIndex / gridSize);
+        const targetCol = targetIndex % gridSize;
+        swapTiles(targetRow, targetCol);
+      }
+    }
+
+    // Reset touch state
+    touchStartPosition = null;
+  }
+
+  function swapTiles(targetRow, targetCol) {
     if (
       draggedPosition &&
       (draggedPosition.row !== targetRow || draggedPosition.col !== targetCol)
@@ -100,6 +143,9 @@
           ondragstart={(e) => handleDragStart(e, rowIndex, colIndex)}
           ondragover={handleDragOver}
           ondrop={(e) => handleDrop(e, rowIndex, colIndex)}
+          ontouchstart={(e) => handleTouchStart(e, rowIndex, colIndex)}
+          ontouchmove={handleTouchMove}
+          ontouchend={handleTouchEnd}
           role="gridcell"
           tabindex="0"
           aria-label="Tile at row {rowIndex + 1}, column {colIndex +
