@@ -6,7 +6,6 @@
     checkLatinSquare,
   } from "./lib/latinSquares.js";
   import Settings from "./components/Settings.svelte";
-  import ConfirmNewGame from "./components/ConfirmNewGame.svelte";
   import VictorySection from "./components/VictorySection.svelte";
   import CurrentGrid from "./components/CurrentGrid.svelte";
   import PreviousGrid from "./components/PreviousGrid.svelte";
@@ -21,11 +20,11 @@
   let solutionGrid = [];
   let currentGrid = [];
   let previousGrids = [];
-  let gameState = "playing"; // 'setup', 'playing', 'won'
+  let gameState = "playing"; // 'playing', 'won'
   let currentTurn = 1;
   let maxGuesses = 6;
   let seed = null;
-  let showConfirmNewGame = false;
+  let showSettingsModal = false;
   let isTransitioning = false;
   let currentGridFeedback = null;
 
@@ -160,19 +159,19 @@
   }
 
   function newGame() {
-    gameState = "setup";
     seed = null;
     previousGrids = [];
     currentTurn = 1;
-    showConfirmNewGame = false;
+    showSettingsModal = false;
+    startGame();
   }
 
-  function showNewGameConfirm() {
-    showConfirmNewGame = true;
+  function showNewGameModal() {
+    showSettingsModal = true;
   }
 
-  function hideNewGameConfirm() {
-    showConfirmNewGame = false;
+  function hideSettingsModal() {
+    showSettingsModal = false;
   }
 
   function updateURL() {
@@ -213,74 +212,68 @@
       </p>
     </div>
 
-    {#if gameState === "setup"}
-      <Settings {settings} onStartGame={startGame} />
-    {/if}
+    <section class="game">
+      <!-- Previous Grids -->
+      {#each previousGrids as prevGrid (prevGrid.turn)}
+        <div class="previous-grid">
+          <PreviousGrid previousGrid={prevGrid} />
+        </div>
+      {/each}
 
-    {#if gameState === "playing" || gameState === "won"}
-      <section class="game">
-        <!-- Previous Grids -->
-        {#each previousGrids as prevGrid (prevGrid.turn)}
-          <div class="previous-grid">
-            <PreviousGrid previousGrid={prevGrid} />
-          </div>
-        {/each}
-
-        <!-- Current/Final Grid -->
-        {#if gameState === "playing"}
-          <div class="current-grid">
-            <CurrentGrid
-              bind:currentGrid
-              visualCues={settings.visualCues}
-              {previousGrids}
-              {solutionGrid}
-              feedback={currentGridFeedback}
-            />
-            <button
-              onclick={checkGrid}
-              class="primary-btn check-btn {isTransitioning
-                ? 'transitioning'
-                : ''}"
-              disabled={isCheckDisabled}
-            >
-              {isTransitioning
-                ? "Checking..."
-                : settings.strictMode && !checkLatinSquare(currentGrid)
-                  ? "Cannot check - fix the non-unique numbers"
-                  : maxGuesses - currentTurn <= 0
-                    ? "Oh no! You ran out of guesses!"
-                    : `Check (${maxGuesses - currentTurn} guesses left)`}
-            </button>
-          </div>
-        {/if}
-
-        <!-- Victory Screen -->
-        {#if gameState === "won"}
-          <VictorySection
-            onNewGame={newGame}
-            onShareGame={shareGame}
-            guessCount={previousGrids.length}
+      <!-- Current/Final Grid -->
+      {#if gameState === "playing"}
+        <div class="current-grid">
+          <CurrentGrid
+            bind:currentGrid
+            visualCues={settings.visualCues}
+            {previousGrids}
+            {solutionGrid}
+            feedback={currentGridFeedback}
           />
-        {/if}
+          <button
+            onclick={checkGrid}
+            class="primary-btn check-btn {isTransitioning
+              ? 'transitioning'
+              : ''}"
+            disabled={isCheckDisabled}
+          >
+            {isTransitioning
+              ? "Checking..."
+              : settings.strictMode && !checkLatinSquare(currentGrid)
+                ? "Cannot check - fix the non-unique numbers"
+                : maxGuesses - currentTurn <= 0
+                  ? "Oh no! You ran out of guesses!"
+                  : `Check (${maxGuesses - currentTurn} guesses left)`}
+          </button>
+        </div>
+      {/if}
 
-        <!-- Discrete New Game button for during gameplay -->
-        {#if gameState === "playing"}
-          <div class="bottom-actions">
-            <button
-              onclick={showNewGameConfirm}
-              class="discrete-btn {outOfTries ? 'out-of-tries' : ''}"
-            >
-              ↻ New Game
-            </button>
-          </div>
-        {/if}
-      </section>
-    {/if}
+      <!-- Victory Screen -->
+      {#if gameState === "won"}
+        <VictorySection
+          onNewGame={showNewGameModal}
+          onShareGame={shareGame}
+          guessCount={previousGrids.length}
+        />
+      {/if}
+
+      <!-- Discrete New Game button for during gameplay -->
+      {#if gameState === "playing"}
+        <div class="bottom-actions">
+          <button
+            onclick={showNewGameModal}
+            class="discrete-btn {outOfTries ? 'out-of-tries' : ''}"
+          >
+            ↻ New Game
+          </button>
+        </div>
+      {/if}
+    </section>
   </div>
 </main>
 
-{#if showConfirmNewGame}
-  <ConfirmNewGame onConfirm={newGame} onCancel={hideNewGameConfirm} />
+{#if showSettingsModal}
+  <Settings {settings} onStartGame={newGame} onCancel={hideSettingsModal} />
 {/if}
 
 <style>
