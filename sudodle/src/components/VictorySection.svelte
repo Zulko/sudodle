@@ -11,9 +11,9 @@
     You solved it in {guessCount} guess{guessCount === 1 ? "" : "es"}!
   </p>
   <div class="victory-actions">
-    <button onclick={onNewGame} class="share-btn"> 🎯 New Game </button>
+    <button onclick={onNewGame} class="share-btn"> ✨ New Game </button>
     <button onclick={onShareGame} class="new-game-btn">
-      📤 Share this puzzle
+      🔗 Share this puzzle
     </button>
   </div>
 </div>

@@ -102,7 +102,7 @@
     <div class="modal-actions">
       <button onclick={onCancel} class="cancel-btn"> Cancel </button>
       <button onclick={handleStartGame} class="confirm-btn">
-        <span>🎯</span>
+        <span>✨</span>
         New Game
       </button>
     </div>
