@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { flip } from "svelte/animate";
   import { _ } from "svelte-i18n";
 
   export let currentGrid;
@@ -9,15 +10,54 @@
   export let feedback = null;
 
   let draggedTile = null;
-  let draggedPosition = null;
-  let hoveredPosition = null;
+  let draggedIndex = null;
+  let hoveredIndex = null;
   let recentlySwapped = [];
   let touchStartPosition = null;
   let isDragging = false;
   let currentTouchPosition = null;
 
+  // Create stable tiles with unique keys based on content
+  let tiles = [];
+  let initialGridSet = false;
+
   // Get the grid size
   $: gridSize = currentGrid.length;
+
+  // Initialize tiles with stable keys based on value and initial position
+  $: if (!initialGridSet && currentGrid.length > 0) {
+    tiles = [];
+    for (let row = 0; row < currentGrid.length; row++) {
+      for (let col = 0; col < currentGrid[row].length; col++) {
+        tiles.push({
+          // Stable key based on value and original position - this never changes!
+          id: `tile-${currentGrid[row][col]}-at-${row}-${col}`,
+          value: currentGrid[row][col],
+        });
+      }
+    }
+    initialGridSet = true;
+  }
+
+  // Helper functions to convert between index and row/col
+  function indexToRowCol(index) {
+    return {
+      row: Math.floor(index / gridSize),
+      col: index % gridSize,
+    };
+  }
+
+  // Update currentGrid from tiles array order
+  function updateCurrentGrid() {
+    const newGrid = Array(gridSize)
+      .fill(null)
+      .map(() => Array(gridSize).fill(0));
+    tiles.forEach((tile, index) => {
+      const { row, col } = indexToRowCol(index);
+      newGrid[row][col] = tile.value;
+    });
+    currentGrid = newGrid;
+  }
 
   // Calculate dragging tile size based on grid size
   $: draggingTileSize = (() => {
@@ -46,7 +86,6 @@
   })();
 
   // Utility function to prevent default when possible
-  // This prevents console errors when preventDefault() is called on passive event listeners
   function preventDefaultIfPossible(event) {
     try {
       event.preventDefault();
@@ -56,17 +95,17 @@
   }
 
   // Force reactivity for tile classes when hover state changes
-  $: hoveredPosition,
-    draggedPosition,
+  $: hoveredIndex,
+    draggedIndex,
     isDragging,
     recentlySwapped,
     (() => {
       // This reactive statement ensures tiles re-render when hover state changes
     })();
 
-  function handleDragStart(event, row, col) {
-    draggedTile = currentGrid[row][col];
-    draggedPosition = { row, col };
+  function handleDragStart(event, tileIndex) {
+    draggedTile = tiles[tileIndex];
+    draggedIndex = tileIndex;
     event.dataTransfer.effectAllowed = "move";
   }
 
@@ -79,12 +118,9 @@
 
     // Make sure we're targeting a tile element
     if (targetElement && targetElement.classList.contains("tile")) {
-      // Use data attributes instead of querySelector index for more reliable positioning
-      const targetRow = parseInt(targetElement.getAttribute("data-row"));
-      const targetCol = parseInt(targetElement.getAttribute("data-col"));
-
-      if (!isNaN(targetRow) && !isNaN(targetCol)) {
-        hoveredPosition = { row: targetRow, col: targetCol };
+      const targetIndex = parseInt(targetElement.getAttribute("data-index"));
+      if (!isNaN(targetIndex)) {
+        hoveredIndex = targetIndex;
       }
     }
   }
@@ -96,12 +132,9 @@
     let targetElement = event.target;
 
     if (targetElement && targetElement.classList.contains("tile")) {
-      // Use data attributes instead of querySelector index for more reliable positioning
-      const targetRow = parseInt(targetElement.getAttribute("data-row"));
-      const targetCol = parseInt(targetElement.getAttribute("data-col"));
-
-      if (!isNaN(targetRow) && !isNaN(targetCol)) {
-        hoveredPosition = { row: targetRow, col: targetCol };
+      const targetIndex = parseInt(targetElement.getAttribute("data-index"));
+      if (!isNaN(targetIndex)) {
+        hoveredIndex = targetIndex;
       }
     }
   }
@@ -112,20 +145,20 @@
       !event.relatedTarget ||
       !event.relatedTarget.classList.contains("tile")
     ) {
-      hoveredPosition = null;
+      hoveredIndex = null;
     }
   }
 
-  function handleDrop(event, targetRow, targetCol) {
+  function handleDrop(event, targetIndex) {
     preventDefaultIfPossible(event);
-    swapTiles(targetRow, targetCol);
-    hoveredPosition = null;
+    swapTiles(targetIndex);
+    hoveredIndex = null;
   }
 
   // Touch event handlers
-  function handleTouchStart(event, row, col) {
-    draggedTile = currentGrid[row][col];
-    draggedPosition = { row, col };
+  function handleTouchStart(event, tileIndex) {
+    draggedTile = tiles[tileIndex];
+    draggedIndex = tileIndex;
     touchStartPosition = {
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
@@ -139,7 +172,7 @@
 
   function handleTouchMove(event) {
     event.preventDefault(); // Prevent scrolling - now safe since we use non-passive listeners
-    if (isDragging && draggedPosition) {
+    if (isDragging && draggedIndex !== null) {
       currentTouchPosition = {
         x: event.touches[0].clientX,
         y: event.touches[0].clientY,
@@ -152,21 +185,18 @@
       );
 
       if (elementBelow && elementBelow.classList.contains("tile")) {
-        // Use data attributes instead of querySelector index for more reliable positioning
-        const targetRow = parseInt(elementBelow.getAttribute("data-row"));
-        const targetCol = parseInt(elementBelow.getAttribute("data-col"));
-
-        if (!isNaN(targetRow) && !isNaN(targetCol)) {
-          hoveredPosition = { row: targetRow, col: targetCol };
+        const targetIndex = parseInt(elementBelow.getAttribute("data-index"));
+        if (!isNaN(targetIndex)) {
+          hoveredIndex = targetIndex;
         }
       } else {
-        hoveredPosition = null;
+        hoveredIndex = null;
       }
     }
   }
 
   function handleTouchEnd(event) {
-    if (!draggedPosition || !touchStartPosition) return;
+    if (draggedIndex === null || !touchStartPosition) return;
 
     const touch = event.changedTouches[0];
     const elementBelow = document.elementFromPoint(
@@ -175,12 +205,9 @@
     );
 
     if (elementBelow && elementBelow.classList.contains("tile")) {
-      // Use data attributes instead of querySelector index for more reliable positioning
-      const targetRow = parseInt(elementBelow.getAttribute("data-row"));
-      const targetCol = parseInt(elementBelow.getAttribute("data-col"));
-
-      if (!isNaN(targetRow) && !isNaN(targetCol)) {
-        swapTiles(targetRow, targetCol);
+      const targetIndex = parseInt(elementBelow.getAttribute("data-index"));
+      if (!isNaN(targetIndex)) {
+        swapTiles(targetIndex);
       }
     }
 
@@ -188,26 +215,31 @@
     touchStartPosition = null;
     isDragging = false;
     currentTouchPosition = null;
-    hoveredPosition = null;
+    hoveredIndex = null;
   }
 
-  function swapTiles(targetRow, targetCol) {
-    if (
-      draggedPosition &&
-      (draggedPosition.row !== targetRow || draggedPosition.col !== targetCol)
-    ) {
-      // Swap the tiles
-      const newGrid = currentGrid.map((row) => [...row]);
-      const temp = newGrid[targetRow][targetCol];
-      newGrid[targetRow][targetCol] = draggedTile;
-      newGrid[draggedPosition.row][draggedPosition.col] = temp;
+  function swapTiles(targetIndex) {
+    if (draggedIndex !== null && draggedIndex !== targetIndex) {
+      // Swap tiles in the array - this changes their positions while keeping stable keys
+      const newTiles = [...tiles];
+      [newTiles[draggedIndex], newTiles[targetIndex]] = [
+        newTiles[targetIndex],
+        newTiles[draggedIndex],
+      ];
 
-      currentGrid = newGrid;
+      tiles = newTiles;
 
-      // Highlight the swapped tiles
+      // Update currentGrid
+      updateCurrentGrid();
+
+      // Get row/col for recently swapped highlighting
+      const draggedPos = indexToRowCol(draggedIndex);
+      const targetPos = indexToRowCol(targetIndex);
+
+      // Highlight the swapped positions
       recentlySwapped = [
-        { row: targetRow, col: targetCol },
-        { row: draggedPosition.row, col: draggedPosition.col },
+        { row: draggedPos.row, col: draggedPos.col },
+        { row: targetPos.row, col: targetPos.col },
       ];
 
       // Clear the highlight after animation
@@ -217,10 +249,11 @@
     }
 
     draggedTile = null;
-    draggedPosition = null;
+    draggedIndex = null;
   }
 
-  function getTileClasses(row, col, value) {
+  function getTileClasses(tileIndex, value) {
+    const { row, col } = indexToRowCol(tileIndex);
     let classes = ["tile"];
 
     // Helper functions
@@ -246,19 +279,11 @@
     };
 
     // Add drag/interaction classes
-    if (
-      isDragging &&
-      draggedPosition?.row === row &&
-      draggedPosition?.col === col
-    ) {
+    if (isDragging && draggedIndex === tileIndex) {
       classes.push("dragging");
     }
 
-    if (
-      hoveredPosition?.row === row &&
-      hoveredPosition?.col === col &&
-      !(draggedPosition?.row === row && draggedPosition?.col === col)
-    ) {
+    if (hoveredIndex === tileIndex && draggedIndex !== tileIndex) {
       classes.push("drag-hover");
     }
 
@@ -318,28 +343,28 @@
 <div class="grid-container">
   <div class="instruction-label">{$_("dragTilesInstruction")}</div>
   <div class="grid" style="--grid-size: {gridSize}">
-    {#each currentGrid as row, rowIndex}
-      {#each row as value, colIndex}
-        <div
-          class={getTileClasses(rowIndex, colIndex, value)}
-          draggable="true"
-          data-row={rowIndex}
-          data-col={colIndex}
-          ondragstart={(e) => handleDragStart(e, rowIndex, colIndex)}
-          ondragover={handleDragOver}
-          ondragenter={handleDragEnter}
-          ondragleave={handleDragLeave}
-          ondrop={(e) => handleDrop(e, rowIndex, colIndex)}
-          ontouchstart={(e) => handleTouchStart(e, rowIndex, colIndex)}
-          ontouchend={handleTouchEnd}
-          role="gridcell"
-          tabindex="0"
-          aria-label="Tile at row {rowIndex + 1}, column {colIndex +
-            1}, value {value}"
-        >
-          {value}
-        </div>
-      {/each}
+    {#each tiles as tile, index (tile.id)}
+      {@const { row, col } = indexToRowCol(index)}
+      <div
+        class={getTileClasses(index, tile.value)}
+        draggable="true"
+        data-index={index}
+        data-row={row}
+        data-col={col}
+        animate:flip={{ duration: 300 }}
+        ondragstart={(e) => handleDragStart(e, index)}
+        ondragover={handleDragOver}
+        ondragenter={handleDragEnter}
+        ondragleave={handleDragLeave}
+        ondrop={(e) => handleDrop(e, index)}
+        ontouchstart={(e) => handleTouchStart(e, index)}
+        ontouchend={handleTouchEnd}
+        role="gridcell"
+        tabindex="0"
+        aria-label="Tile at row {row + 1}, column {col + 1}, value {tile.value}"
+      >
+        {tile.value}
+      </div>
     {/each}
   </div>
 
@@ -352,7 +377,7 @@
         draggingTileSize /
           2}px; width: {draggingTileSize}px; height: {draggingTileSize}px;"
     >
-      {draggedTile}
+      {draggedTile.value}
     </div>
   {/if}
 </div>
@@ -376,9 +401,8 @@
   }
 
   .grid {
-    display: grid;
-    grid-template-columns: repeat(var(--grid-size), 1fr);
-    grid-template-rows: repeat(var(--grid-size), 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 2px;
     background: transparent;
     padding: 4px;
@@ -430,6 +454,10 @@
     position: relative;
     /* Create isolation context to contain transforms */
     isolation: isolate;
+    /* Flexbox sizing for square tiles */
+    width: calc((100% - (var(--grid-size) - 1) * 2px) / var(--grid-size));
+    height: calc((100% - (var(--grid-size) - 1) * 2px) / var(--grid-size));
+    flex-shrink: 0;
   }
 
   .tile:hover {
