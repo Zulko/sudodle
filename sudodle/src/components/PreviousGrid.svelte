@@ -5,6 +5,19 @@
   // Get the grid size from the grid data
   $: gridSize = previousGrid.grid.length;
 
+  // Calculate border radius based on grid size - larger grids get smaller radius
+  $: borderRadius = (() => {
+    const radiusMap = {
+      4: 10,
+      5: 8,
+      6: 7,
+      7: 6,
+      8: 5,
+      9: 4,
+    };
+    return radiusMap[gridSize] || Math.max(4, 14 - gridSize); // fallback formula
+  })();
+
   function getOrdinal(num) {
     if ($locale === "fr") {
       // French ordinals: 1ère, 2ème, 3ème, etc.
@@ -42,7 +55,10 @@
 
 <div class="grid-container">
   <div class="turn-label">{getOrdinal(previousGrid.turn)} {$_("guess")}</div>
-  <div class="grid" style="--grid-size: {gridSize}">
+  <div
+    class="grid"
+    style="--grid-size: {gridSize}; --border-radius: {borderRadius}px"
+  >
     {#each previousGrid.grid as row, rowIndex}
       {#each row as value, colIndex}
         <div
@@ -94,7 +110,7 @@
     font-weight: 600;
     color: #2c3e50;
     border: 1px solid #e1e5e9;
-    border-radius: 10px;
+    border-radius: var(--border-radius, 10px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     user-select: none;
     transition: none;

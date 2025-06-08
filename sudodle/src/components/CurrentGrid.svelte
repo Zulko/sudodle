@@ -24,6 +24,19 @@
   // Get the grid size
   $: gridSize = currentGrid.length;
 
+  // Calculate border radius based on grid size - larger grids get smaller radius
+  $: borderRadius = (() => {
+    const radiusMap = {
+      4: 10,
+      5: 8,
+      6: 7,
+      7: 6,
+      8: 5,
+      9: 4,
+    };
+    return radiusMap[gridSize] || Math.max(4, 14 - gridSize); // fallback formula
+  })();
+
   // Create a game identifier based on solution grid - when this changes, it's a new game
   $: currentGameId =
     solutionGrid.length > 0 ? solutionGrid.flat().join("-") : null;
@@ -346,7 +359,10 @@
 
 <div class="grid-container">
   <div class="instruction-label">{$_("dragTilesInstruction")}</div>
-  <div class="grid" style="--grid-size: {gridSize}">
+  <div
+    class="grid"
+    style="--grid-size: {gridSize}; --border-radius: {borderRadius}px"
+  >
     {#each tiles as tile, index (tile.id)}
       {@const { row, col } = indexToRowCol(index)}
       <div
@@ -423,7 +439,7 @@
     /* Size will be set via inline styles */
     background: white;
     border: 1px solid #e1e5e9;
-    border-radius: 10px;
+    border-radius: var(--border-radius, 10px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
@@ -445,7 +461,7 @@
     font-weight: 600;
     color: #2c3e50;
     border: 1px solid #e1e5e9;
-    border-radius: 10px;
+    border-radius: var(--border-radius, 10px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     cursor: grab;
     transition: all 0.2s ease;
