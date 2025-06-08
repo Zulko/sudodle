@@ -1,4 +1,5 @@
 <script>
+  import { _ } from "svelte-i18n";
   export let settings;
   export let onStartGame;
   export let onCancel;
@@ -40,7 +41,7 @@
     tabindex="0"
   >
     <div class="modal-header">
-      <h3 id="modal-title">Start a New Sudodle</h3>
+      <h3 id="modal-title">{$_("startNewSudodle")}</h3>
     </div>
 
     <div class="modal-content">
@@ -72,9 +73,7 @@
                   />
                   <span class="slider"></span>
                 </label>
-                <span class="switch-text"
-                  >Highlight correct/incorrect positions</span
-                >
+                <span class="switch-text">{$_("visualCues")}</span>
               </div>
             </div>
           </div>
@@ -89,9 +88,7 @@
                   />
                   <span class="slider"></span>
                 </label>
-                <span class="switch-text"
-                  >Guesses must be valid grids (harder)</span
-                >
+                <span class="switch-text">{$_("strictMode")}</span>
               </div>
             </div>
           </div>
@@ -100,10 +97,10 @@
     </div>
 
     <div class="modal-actions">
-      <button onclick={onCancel} class="cancel-btn"> Cancel </button>
+      <button onclick={onCancel} class="cancel-btn"> {$_("cancel")} </button>
       <button onclick={handleStartGame} class="confirm-btn">
         <span>✨</span>
-        New Game
+        {$_("newGame")}
       </button>
     </div>
   </div>

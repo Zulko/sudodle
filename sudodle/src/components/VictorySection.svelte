@@ -1,19 +1,32 @@
 <script>
+  import { _, locale } from "svelte-i18n";
   export let onNewGame;
   export let onShareGame;
   export let guessCount;
+
+  // Helper function for pluralization based on language
+  $: plural =
+    $locale === "fr"
+      ? guessCount === 1
+        ? ""
+        : "s" // French: tentative/tentatives
+      : guessCount === 1
+        ? ""
+        : "es"; // English: guess/guesses
 </script>
 
 <div class="victory">
   <div class="celebration-icon">🎉</div>
-  <h2>Well done!</h2>
+  <h2>{$_("wellDone")}</h2>
   <p>
-    You solved it in {guessCount} guess{guessCount === 1 ? "" : "es"}!
+    {$_("solvedInGuesses", { values: { count: guessCount, plural } })}
   </p>
   <div class="victory-actions">
-    <button onclick={onNewGame} class="share-btn"> ✨ New Game </button>
+    <button onclick={onNewGame} class="share-btn">
+      {$_("newGameAction")}
+    </button>
     <button onclick={onShareGame} class="new-game-btn">
-      🔗 Share this puzzle
+      {$_("shareGameAction")}
     </button>
 
     <p class="github-link">
@@ -22,7 +35,7 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-        visit the project on Github
+        {$_("visitGithub")}
         <img src="/github-icon.svg" alt="GitHub" class="github-icon" />
       </a>
     </p>

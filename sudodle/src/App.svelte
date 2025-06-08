@@ -1,5 +1,7 @@
 <script>
   import { onMount } from "svelte";
+  import { _, locale, locales } from "svelte-i18n";
+  import "./lib/i18n.js";
   import {
     cyclicLatinSquare,
     uniformRandomLatinSquare,
@@ -36,6 +38,11 @@
 
   // Reactive statement to check if out of tries
   $: outOfTries = gameState === "playing" && maxGuesses - currentTurn <= 0;
+
+  // Language switching function
+  function switchLanguage(lang) {
+    $locale = lang;
+  }
 
   // URL parameter handling
   onMount(() => {
@@ -189,9 +196,9 @@
 
   function shareGame() {
     const gameURL = window.location.href;
-    let title = "Sudodle Puzzle";
+    let title = $_("shareTitle");
     if (gameState === "won") {
-      title = `I solved this Sudodle in ${previousGrids.length} guesses!`;
+      title = $_("shareWinTitle", { values: { count: previousGrids.length } });
     }
     if (navigator.share) {
       navigator.share({
@@ -200,19 +207,34 @@
       });
     } else {
       navigator.clipboard.writeText(gameURL);
-      alert("Puzzle URL copied to clipboard!");
+      alert($_("urlCopied"));
     }
   }
 </script>
 
 <main>
   <div class="container">
-    <h1>Sudodle</h1>
+    <div class="header">
+      <h1>{$_("title")}</h1>
+      <div class="language-switcher">
+        <button
+          class="lang-btn {$locale === 'en' ? 'active' : ''}"
+          onclick={() => switchLanguage("en")}
+        >
+          EN
+        </button>
+        <button
+          class="lang-btn {$locale === 'fr' ? 'active' : ''}"
+          onclick={() => switchLanguage("fr")}
+        >
+          FR
+        </button>
+      </div>
+    </div>
 
     <div class="rules">
       <p>
-        Find the correct arrangement of numbers where each appears once in every
-        row and column. After each guess, see which tiles are correctly placed!
+        {$_("rules")}
       </p>
     </div>
 
@@ -242,12 +264,14 @@
             disabled={isCheckDisabled}
           >
             {isTransitioning
-              ? "Checking..."
+              ? $_("checking")
               : settings.strictMode && !checkLatinSquare(currentGrid)
-                ? "Cannot check - fix the non-unique numbers"
+                ? $_("cannotCheck")
                 : maxGuesses - currentTurn <= 0
-                  ? "Oh no! You ran out of guesses!"
-                  : `Check (${maxGuesses - currentTurn} guesses left)`}
+                  ? $_("outOfGuesses")
+                  : $_("checkWithGuesses", {
+                      values: { count: maxGuesses - currentTurn },
+                    })}
           </button>
         </div>
       {/if}
@@ -268,10 +292,10 @@
             onclick={showNewGameModal}
             class="discrete-btn {outOfTries ? 'out-of-tries' : ''}"
           >
-            ↻ New Game
+            ↻ {$_("newGame")}
           </button>
           <button onclick={shareGame} class="discrete-btn share-btn">
-            🔗 Share this Puzzle
+            🔗 {$_("shareThisPuzzle")}
           </button>
         </div>
       {/if}
@@ -292,12 +316,49 @@
       sans-serif;
   }
 
-  h1 {
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 0;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 2rem;
+  }
+
+  h1 {
+    color: #2c3e50;
+    margin: 0;
     font-size: 2.5rem;
+  }
+
+  .language-switcher {
+    display: flex;
+    gap: 0.25rem;
+    background: #f8f9fa;
+    border-radius: 0.375rem;
+    padding: 0.25rem;
+    border: 1px solid #e9ecef;
+  }
+
+  .lang-btn {
+    padding: 0.375rem 0.75rem;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .lang-btn:hover {
+    background: #ffffff;
+    color: #495057;
+  }
+
+  .lang-btn.active {
+    background: #3498db;
+    color: white;
+    box-shadow: 0 1px 3px rgba(52, 152, 219, 0.3);
   }
 
   .rules {
@@ -433,6 +494,25 @@
 
     h1 {
       color: #ffffff;
+    }
+
+    .language-switcher {
+      background: #2a2a2a;
+      border: 1px solid #444;
+    }
+
+    .lang-btn {
+      color: #aaa;
+    }
+
+    .lang-btn:hover {
+      background: #333;
+      color: #fff;
+    }
+
+    .lang-btn.active {
+      background: #3498db;
+      color: white;
     }
 
     .rules p {
