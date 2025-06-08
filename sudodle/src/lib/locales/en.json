@@ -21,7 +21,7 @@
   "shareTitle": "Sudodle Puzzle",
   "shareWinTitle": "I solved this Sudodle in {count} guesses!",
   "urlCopied": "Puzzle URL copied to clipboard!",
-  "dragTilesInstruction": "Drag tiles to swap them",
+  "dragTilesInstruction": "Drag a tile on top of another to swap them",
   "guess": "guess",
   "ordinalSt": "st",
   "ordinalNd": "nd",
