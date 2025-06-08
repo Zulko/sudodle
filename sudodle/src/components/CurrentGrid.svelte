@@ -637,8 +637,8 @@
     }
 
     .tile.incorrect-previous {
-      background: #5a4a1a;
-      color: #ffc107;
+      background: #dcb773;
+      color: #64635f;
       font-weight: 700;
     }
 
@@ -678,7 +678,7 @@
 
     /* Combination: both previously incorrect AND duplicate */
     .tile.incorrect-previous.duplicate {
-      background: #5a4a1a;
+      background: #f5cc80;
       color: #ff8c42;
       font-weight: 700;
     }

@@ -545,4 +545,4 @@ def simulate_game(N):
 
 if __name__ == "__main__":
     # Run a sample game simulation with a 5×5 Latin square
-    simulate_game(8)
+    simulate_game(9)
