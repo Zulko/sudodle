@@ -19,24 +19,28 @@
 
   // Create stable tiles with unique keys based on content
   let tiles = [];
-  let initialGridSet = false;
+  let lastGameId = null;
 
   // Get the grid size
   $: gridSize = currentGrid.length;
 
+  // Create a game identifier based on solution grid - when this changes, it's a new game
+  $: currentGameId =
+    solutionGrid.length > 0 ? solutionGrid.flat().join("-") : null;
+
   // Initialize tiles with stable keys based on value and initial position
-  $: if (!initialGridSet && currentGrid.length > 0) {
+  $: if (currentGrid.length > 0 && currentGameId !== lastGameId) {
     tiles = [];
     for (let row = 0; row < currentGrid.length; row++) {
       for (let col = 0; col < currentGrid[row].length; col++) {
         tiles.push({
           // Stable key based on value and original position - this never changes!
-          id: `tile-${currentGrid[row][col]}-at-${row}-${col}`,
+          id: `tile-${currentGrid[row][col]}-at-${row}-${col}-${currentGameId}`,
           value: currentGrid[row][col],
         });
       }
     }
-    initialGridSet = true;
+    lastGameId = currentGameId;
   }
 
   // Helper functions to convert between index and row/col
@@ -351,7 +355,7 @@
         data-index={index}
         data-row={row}
         data-col={col}
-        animate:flip={{ duration: 300 }}
+        animate:flip={{ duration: draggedIndex === index ? 0 : 300 }}
         ondragstart={(e) => handleDragStart(e, index)}
         ondragover={handleDragOver}
         ondragenter={handleDragEnter}
