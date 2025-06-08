@@ -288,6 +288,7 @@
   h1 {
     text-align: center;
     color: #2c3e50;
+    margin-top: 0;
     margin-bottom: 2rem;
     font-size: 2.5rem;
   }

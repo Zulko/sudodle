@@ -90,7 +90,7 @@
                   <span class="slider"></span>
                 </label>
                 <span class="switch-text"
-                  >All guesses must be latin squares (harder!)</span
+                  >All guesses must be latin squares (harder)</span
                 >
               </div>
             </div>
@@ -135,7 +135,7 @@
   }
 
   .modal-header {
-    padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+    padding: 1rem 1.5rem 0.5rem 1.5rem;
     border-bottom: 1px solid #eee;
   }
 
@@ -147,7 +147,7 @@
   }
 
   .modal-content {
-    padding: 1rem 1.5rem;
+    padding: 1rem 0.7rem;
   }
 
   .modal-actions {
