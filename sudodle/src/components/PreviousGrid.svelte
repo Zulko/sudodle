@@ -1,13 +1,27 @@
 <script>
+  import { _, locale } from "svelte-i18n";
   export let previousGrid;
 
   // Get the grid size from the grid data
   $: gridSize = previousGrid.grid.length;
 
   function getOrdinal(num) {
-    const suffix = ["th", "st", "nd", "rd"];
-    const v = num % 100;
-    return num + (suffix[(v - 20) % 10] || suffix[v] || suffix[0]);
+    if ($locale === "fr") {
+      // French ordinals: 1ère, 2ème, 3ème, etc.
+      return num === 1
+        ? `${num}${$_("ordinalSt")}`
+        : `${num}${$_("ordinalNd")}`;
+    } else {
+      // English ordinals: 1st, 2nd, 3rd, 4th, etc.
+      const suffix = [
+        $_("ordinalTh"),
+        $_("ordinalSt"),
+        $_("ordinalNd"),
+        $_("ordinalRd"),
+      ];
+      const v = num % 100;
+      return num + (suffix[(v - 20) % 10] || suffix[v] || suffix[0]);
+    }
   }
 
   function getTileClasses(row, col) {
@@ -27,7 +41,7 @@
 </script>
 
 <div class="grid-container">
-  <div class="turn-label">{getOrdinal(previousGrid.turn)} guess</div>
+  <div class="turn-label">{getOrdinal(previousGrid.turn)} {$_("guess")}</div>
   <div class="grid" style="--grid-size: {gridSize}">
     {#each previousGrid.grid as row, rowIndex}
       {#each row as value, colIndex}

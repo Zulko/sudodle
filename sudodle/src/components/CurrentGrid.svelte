@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { _ } from "svelte-i18n";
 
   export let currentGrid;
   export let visualCues = true;
@@ -315,7 +316,7 @@
 </script>
 
 <div class="grid-container">
-  <div class="instruction-label">Drag tiles to swap them</div>
+  <div class="instruction-label">{$_("dragTilesInstruction")}</div>
   <div class="grid" style="--grid-size: {gridSize}">
     {#each currentGrid as row, rowIndex}
       {#each row as value, colIndex}

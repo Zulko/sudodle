@@ -1,10 +1,10 @@
 {
   "title": "Sudodle",
-  "rules": "Devinez la grille cachée, sachant que chaque nombre apparaît une fois par ligne et colonne. Cliquez sur \"Vérifier\" pour voir les cases correctement placées.",
+  "rules": "Devinez la grille cachée, sachant que chaque chiffre apparaît une fois sur chaque ligne et colonne. Cliquez sur \"Vérifier\" pour révéler les cases correctement placées.",
   "checking": "Vérification...",
   "check": "Vérifier",
   "checkWithGuesses": "Vérifier ({count} tentatives restantes)",
-  "cannotCheck": "Impossible de vérifier - corrigez les nombres non-uniques",
+  "cannotCheck": "🙅‍♂️ Des chiffres sont en doublons",
   "outOfGuesses": "Oh non ! Vous n'avez plus de tentatives !",
   "newGame": "Nouvelle Partie",
   "shareThisPuzzle": "Partager ce Puzzle",
@@ -15,10 +15,16 @@
   "visitGithub": "visiter le projet sur Github",
   "startNewSudodle": "Démarrer un Nouveau Sudodle",
   "gridSize": "Taille de la Grille",
-  "visualCues": "Surligner les positions correctes/incorrectes",
-  "strictMode": "Les tentatives doivent être des grilles valides (plus difficile)",
+  "visualCues": "Colorie les cases correctes/incorrectes",
+  "strictMode": "Seules les grilles valides sont verifiables",
   "cancel": "Annuler",
   "shareTitle": "Puzzle Sudodle",
   "shareWinTitle": "J'ai résolu ce Sudodle en {count} tentatives !",
-  "urlCopied": "URL du puzzle copiée dans le presse-papiers !"
+  "urlCopied": "URL du puzzle copiée dans le presse-papiers !",
+  "dragTilesInstruction": "Faites glisser les cases pour les échanger",
+  "guess": "tentative",
+  "ordinalSt": "ère",
+  "ordinalNd": "ème",
+  "ordinalRd": "ème",
+  "ordinalTh": "ème"
 } 
