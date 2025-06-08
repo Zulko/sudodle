@@ -601,6 +601,43 @@
       color: #aaa;
     }
 
+    .tile {
+      background: #2a2a2a;
+      color: #ffffff;
+      border: 1px solid #555;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    .dragging-tile {
+      background: #2a2a2a;
+      border: 1px solid #555;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    .tile:hover {
+      background: #333;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+    .tile.drag-hover {
+      background: #1a4c7d !important;
+      border-color: #2196f3 !important;
+      box-shadow: 0 8px 16px rgba(52, 152, 219, 0.6) !important;
+    }
+    .tile.duplicate {
+      background: #2a2a2a;
+      color: #cf5910;
+      font-weight: 700;
+    }
+    .tile.incorrect-previous {
+      background: #f1ccc6;
+      color: #64635f;
+      font-weight: 700;
+    }
+    .tile.incorrect-previous.duplicate {
+      background: #f1ccc6;
+      color: #cf5910;
+      font-weight: 700;
+    }
+    /* 
     .dragging-tile {
       background: #2a2a2a;
       border: 1px solid #555;
@@ -608,12 +645,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
-    .tile {
-      background: #2a2a2a;
-      color: #ffffff;
-      border: 1px solid #555;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
+
 
     .tile:hover {
       background: #333;
@@ -640,8 +672,10 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
     }
+      */
 
     /* Visual cues for dark mode */
+    /*
     .tile.correct-previous {
       background: #28a745;
       color: #ffffff;
@@ -658,8 +692,9 @@
       color: #ff8c42;
       font-weight: 700;
     }
-
+    */
     /* Immediate feedback styles for dark mode */
+    /*
     .tile.feedback-correct {
       background: #28a745;
       color: #ffffff;
@@ -688,6 +723,7 @@
     }
 
     /* Combination: both previously incorrect AND duplicate */
+    /*
     .tile.incorrect-previous.duplicate {
       background: #f5cc80;
       color: #ff8c42;
@@ -695,6 +731,7 @@
     }
 
     /* Focus styles for dark mode */
+    /*
     .tile:focus {
       outline: none;
       box-shadow:
@@ -703,8 +740,10 @@
     }
 
     /* Drag feedback for dark mode */
+    /*
     .tile:where([draggable="true"]:hover) {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
+  } */
   }
 </style>
