@@ -90,7 +90,7 @@
                   <span class="slider"></span>
                 </label>
                 <span class="switch-text"
-                  >All guesses must be latin squares (harder)</span
+                  >Guesses must be latin squares (harder)</span
                 >
               </div>
             </div>
@@ -198,6 +198,8 @@
 
   .settings {
     margin: 0;
+    display: flex;
+    justify-content: center;
   }
 
   .settings-card {
@@ -211,13 +213,18 @@
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
     flex-wrap: wrap;
   }
 
+  .setting-row:last-child {
+    margin-bottom: 0;
+  }
+
   .radio-group {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.3rem;
     flex-wrap: wrap;
   }
 
@@ -271,18 +278,23 @@
 
   .switch-setting {
     width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .switch-container {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .switch-text {
     font-size: 0.9rem;
     color: #555;
     font-weight: 500;
+    flex: 1;
   }
 
   .switch {
@@ -291,6 +303,7 @@
     width: 50px;
     height: 24px;
     flex-shrink: 0;
+    order: -1;
   }
 
   .switch input {
