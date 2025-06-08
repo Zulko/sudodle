@@ -90,7 +90,7 @@
                   <span class="slider"></span>
                 </label>
                 <span class="switch-text"
-                  >Guesses must be latin squares (harder)</span
+                  >Guesses must be valid grids (harder)</span
                 >
               </div>
             </div>
@@ -129,7 +129,7 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     max-width: 400px;
     width: 95%;
-    margin: 1rem;
+    margin: 0.5rem;
     max-height: 90vh;
     overflow-y: auto;
   }
