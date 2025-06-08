@@ -15,6 +15,16 @@
     <button onclick={onShareGame} class="new-game-btn">
       🔗 Share this puzzle
     </button>
+
+    <p class="github-link">
+      <a
+        href="https://github.com/Zulko/sudodle"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        visit the project on Github
+      </a>
+    </p>
   </div>
 </div>
 
@@ -96,6 +106,26 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
+  .github-link {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  .github-link a {
+    color: #64748b;
+    text-decoration: underline;
+    text-decoration-color: rgba(100, 116, 139, 0.4);
+    transition: all 0.2s ease;
+    font-weight: 400;
+  }
+
+  .github-link a:hover {
+    color: #3498db;
+    text-decoration-color: #3498db;
+  }
+
   @keyframes gentle-bounce {
     0%,
     20%,
@@ -160,6 +190,16 @@
       border-color: #3498db;
       color: #3498db;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .github-link a {
+      color: #a0aec0;
+      text-decoration-color: rgba(160, 174, 192, 0.4);
+    }
+
+    .github-link a:hover {
+      color: #3498db;
+      text-decoration-color: #3498db;
     }
   }
 </style>

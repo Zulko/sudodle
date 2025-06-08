@@ -189,14 +189,18 @@
 
   function shareGame() {
     const gameURL = window.location.href;
+    let title = "Sudodle Puzzle";
+    if (gameState === "won") {
+      title = `I solved this Sudodle in ${previousGrids.length} guesses!`;
+    }
     if (navigator.share) {
       navigator.share({
-        title: "Sudodle Game",
+        title: title,
         url: gameURL,
       });
     } else {
       navigator.clipboard.writeText(gameURL);
-      alert("Game URL copied to clipboard!");
+      alert("Puzzle URL copied to clipboard!");
     }
   }
 </script>
