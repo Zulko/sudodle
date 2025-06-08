@@ -5,5 +5,7 @@ register('fr', () => import('./locales/fr.json'));
 
 init({
   fallbackLocale: 'en',
-  initialLocale: getLocaleFromNavigator(),
-}); 
+  initialLocale: getLocaleFromNavigator() || 'en',
+});
+
+export { _ } from 'svelte-i18n'; 

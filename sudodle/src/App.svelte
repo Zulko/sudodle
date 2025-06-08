@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { _, locale, locales } from "svelte-i18n";
+  import { _, locale, locales, isLoading } from "svelte-i18n";
   import "./lib/i18n.js";
   import {
     cyclicLatinSquare,
@@ -61,7 +61,13 @@
       seed = parseInt(urlParams.get("seed"));
     }
 
-    startGame();
+    // Wait for i18n to be ready before starting the game
+    const unsubscribe = isLoading.subscribe((loading) => {
+      if (!loading) {
+        startGame();
+        unsubscribe();
+      }
+    });
   });
 
   // Grid generation functions
@@ -212,102 +218,143 @@
   }
 </script>
 
-<main>
-  <div class="container">
-    <div class="header">
-      <h1>{$_("title")}</h1>
-      <div class="language-switcher">
-        <button
-          class="lang-btn {$locale === 'en' ? 'active' : ''}"
-          onclick={() => switchLanguage("en")}
-        >
-          EN
-        </button>
-        <button
-          class="lang-btn {$locale === 'fr' ? 'active' : ''}"
-          onclick={() => switchLanguage("fr")}
-        >
-          FR
-        </button>
-      </div>
-    </div>
-
-    <div class="rules">
-      <p>
-        {$_("rules")}
-      </p>
-    </div>
-
-    <section class="game">
-      <!-- Previous Grids -->
-      {#each previousGrids as prevGrid (prevGrid.turn)}
-        <div class="previous-grid">
-          <PreviousGrid previousGrid={prevGrid} />
-        </div>
-      {/each}
-
-      <!-- Current/Final Grid -->
-      {#if gameState === "playing"}
-        <div class="current-grid">
-          <CurrentGrid
-            bind:currentGrid
-            visualCues={settings.visualCues}
-            {previousGrids}
-            {solutionGrid}
-            feedback={currentGridFeedback}
-          />
-          <button
-            onclick={checkGrid}
-            class="primary-btn check-btn {isTransitioning
-              ? 'transitioning'
-              : ''}"
-            disabled={isCheckDisabled}
-          >
-            {isTransitioning
-              ? $_("checking")
-              : settings.strictMode && !checkLatinSquare(currentGrid)
-                ? $_("cannotCheck")
-                : maxGuesses - currentTurn <= 0
-                  ? $_("outOfGuesses")
-                  : $_("checkWithGuesses", {
-                      values: { count: maxGuesses - currentTurn },
-                    })}
-          </button>
-        </div>
-      {/if}
-
-      <!-- Victory Screen -->
-      {#if gameState === "won"}
-        <VictorySection
-          onNewGame={showNewGameModal}
-          onShareGame={shareGame}
-          guessCount={previousGrids.length}
-        />
-      {/if}
-
-      <!-- Discrete New Game button for during gameplay -->
-      {#if gameState === "playing"}
-        <div class="bottom-actions">
-          <button
-            onclick={showNewGameModal}
-            class="discrete-btn {outOfTries ? 'out-of-tries' : ''}"
-          >
-            ↻ {$_("newGame")}
-          </button>
-          <button onclick={shareGame} class="discrete-btn share-btn">
-            🔗 {$_("shareThisPuzzle")}
-          </button>
-        </div>
-      {/if}
-    </section>
+{#if $isLoading}
+  <div class="loading">
+    <div class="loading-spinner"></div>
+    <p>Loading...</p>
   </div>
-</main>
+{:else}
+  <main>
+    <div class="container">
+      <div class="header">
+        <h1>{$_("title")}</h1>
+        <div class="language-switcher">
+          <button
+            class="lang-btn {$locale === 'en' ? 'active' : ''}"
+            onclick={() => switchLanguage("en")}
+          >
+            EN
+          </button>
+          <button
+            class="lang-btn {$locale === 'fr' ? 'active' : ''}"
+            onclick={() => switchLanguage("fr")}
+          >
+            FR
+          </button>
+        </div>
+      </div>
 
-{#if showSettingsModal}
-  <Settings {settings} onStartGame={newGame} onCancel={hideSettingsModal} />
+      <div class="rules">
+        <p>
+          {$_("rules")}
+        </p>
+      </div>
+
+      <section class="game">
+        <!-- Previous Grids -->
+        {#each previousGrids as prevGrid (prevGrid.turn)}
+          <div class="previous-grid">
+            <PreviousGrid previousGrid={prevGrid} />
+          </div>
+        {/each}
+
+        <!-- Current/Final Grid -->
+        {#if gameState === "playing"}
+          <div class="current-grid">
+            <CurrentGrid
+              bind:currentGrid
+              visualCues={settings.visualCues}
+              {previousGrids}
+              {solutionGrid}
+              feedback={currentGridFeedback}
+            />
+            <button
+              onclick={checkGrid}
+              class="primary-btn check-btn {isTransitioning
+                ? 'transitioning'
+                : ''}"
+              disabled={isCheckDisabled}
+            >
+              {isTransitioning
+                ? $_("checking")
+                : settings.strictMode && !checkLatinSquare(currentGrid)
+                  ? $_("cannotCheck")
+                  : maxGuesses - currentTurn <= 0
+                    ? $_("outOfGuesses")
+                    : $_("checkWithGuesses", {
+                        values: { count: maxGuesses - currentTurn },
+                      })}
+            </button>
+          </div>
+        {/if}
+
+        <!-- Victory Screen -->
+        {#if gameState === "won"}
+          <VictorySection
+            onNewGame={showNewGameModal}
+            onShareGame={shareGame}
+            guessCount={previousGrids.length}
+          />
+        {/if}
+
+        <!-- Discrete New Game button for during gameplay -->
+        {#if gameState === "playing"}
+          <div class="bottom-actions">
+            <button
+              onclick={showNewGameModal}
+              class="discrete-btn {outOfTries ? 'out-of-tries' : ''}"
+            >
+              ↻ {$_("newGame")}
+            </button>
+            <button onclick={shareGame} class="discrete-btn share-btn">
+              🔗 {$_("shareThisPuzzle")}
+            </button>
+          </div>
+        {/if}
+      </section>
+    </div>
+  </main>
+
+  {#if showSettingsModal}
+    <Settings {settings} onStartGame={newGame} onCancel={hideSettingsModal} />
+  {/if}
 {/if}
 
 <style>
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      sans-serif;
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  .loading p {
+    color: #666;
+    font-size: 1rem;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
   .container {
     max-width: 400px;
     margin: 0 auto;
@@ -487,6 +534,15 @@
 
   /* Dark mode support */
   @media (prefers-color-scheme: dark) {
+    .loading {
+      background-color: #0f0f0f;
+      color: #ffffff;
+    }
+
+    .loading p {
+      color: #ccc;
+    }
+
     .container {
       background-color: #0f0f0f;
       color: #ffffff;
