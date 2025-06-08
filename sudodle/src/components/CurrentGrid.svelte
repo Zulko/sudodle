@@ -632,8 +632,8 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
       50% {
-        transform: translateZ(0) scale(1.05);
-        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+        transform: translateZ(0) scale(1.15);
+        box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5);
       }
       100% {
         transform: translateZ(0) scale(1);
