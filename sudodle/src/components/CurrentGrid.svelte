@@ -222,97 +222,74 @@
   function getTileClasses(row, col, value) {
     let classes = ["tile"];
 
-    // Add dragging class if this tile is being dragged
+    // Helper functions
+    const wasCorrectInPrevious = () =>
+      previousGrids.some((prevGrid) => prevGrid.feedback?.[row]?.[col]);
+
+    const isCorrectAtPosition = () => solutionGrid[row]?.[col] === value;
+
+    const wasIncorrectAtPosition = () =>
+      previousGrids.some(
+        (prevGrid) =>
+          prevGrid.grid[row][col] === value &&
+          prevGrid.feedback?.[row] &&
+          !prevGrid.feedback[row][col]
+      );
+
+    const hasDuplicates = () => {
+      const inRow = currentGrid[row].filter((v) => v === value).length > 1;
+      const inCol = currentGrid.some(
+        (r) => r[col] === value && r !== currentGrid[row]
+      );
+      return inRow || inCol;
+    };
+
+    // Add drag/interaction classes
     if (
       isDragging &&
-      draggedPosition &&
-      draggedPosition.row === row &&
-      draggedPosition.col === col
+      draggedPosition?.row === row &&
+      draggedPosition?.col === col
     ) {
       classes.push("dragging");
     }
 
-    // Add hover class if this tile is being hovered over during drag
     if (
-      hoveredPosition &&
-      hoveredPosition.row === row &&
-      hoveredPosition.col === col &&
-      !(
-        draggedPosition &&
-        draggedPosition.row === row &&
-        draggedPosition.col === col
-      )
+      hoveredPosition?.row === row &&
+      hoveredPosition?.col === col &&
+      !(draggedPosition?.row === row && draggedPosition?.col === col)
     ) {
       classes.push("drag-hover");
     }
 
-    // Add swap highlight class if this tile was recently swapped
     if (recentlySwapped.some((pos) => pos.row === row && pos.col === col)) {
       classes.push("recently-swapped");
     }
 
-    // If we have immediate feedback, show it and return early
-    if (feedback && feedback[row] && feedback[row][col] !== undefined) {
+    // Handle immediate feedback (highest priority)
+    if (feedback?.[row]?.[col] !== undefined) {
       if (feedback[row][col]) {
-        // Check if this tile was already correct in previous turns
-        const wasCorrectInPrevious = previousGrids.some(
-          (prevGrid) =>
-            prevGrid.feedback &&
-            prevGrid.feedback[row] &&
-            prevGrid.feedback[row][col]
+        classes.push(
+          wasCorrectInPrevious() ? "feedback-correct" : "feedback-correct-new"
         );
-
-        if (wasCorrectInPrevious) {
-          classes.push("feedback-correct");
-        } else {
-          classes.push("feedback-correct-new");
-        }
       }
-      // Don't add any class for incorrect tiles - leave them as default
       return classes.join(" ");
     }
 
+    // Skip visual cues if disabled
     if (!visualCues) return classes.join(" ");
 
-    // Check if this position was correct in previous turns
-    const wasCorrectInPrevious = previousGrids.some(
-      (prevGrid) =>
-        prevGrid.feedback &&
-        prevGrid.feedback[row] &&
-        prevGrid.feedback[row][col]
-    );
-
-    if (
-      wasCorrectInPrevious &&
-      solutionGrid[row] &&
-      solutionGrid[row][col] === value
-    ) {
+    // Handle previously correct tiles (skip duplicate detection)
+    if (wasCorrectInPrevious() && isCorrectAtPosition()) {
       classes.push("correct-previous");
+      return classes.join(" ");
     }
 
-    // Check if this value was incorrect at this position in previous turns
-    const wasIncorrectAtPosition = previousGrids.some(
-      (prevGrid) =>
-        prevGrid.grid[row][col] === value &&
-        prevGrid.feedback &&
-        prevGrid.feedback[row] &&
-        !prevGrid.feedback[row][col]
-    );
-
-    if (wasIncorrectAtPosition) {
+    // Handle other visual cues
+    if (wasIncorrectAtPosition()) {
       classes.push("incorrect-previous");
     }
 
-    // Check for duplicates in same row or column (only if not correct at position)
-    const isCorrectAtPosition =
-      solutionGrid[row] && solutionGrid[row][col] === value;
-    const hasDuplicateInRow =
-      currentGrid[row].filter((v) => v === value).length > 1;
-    const hasDuplicateInCol = currentGrid.some(
-      (r) => r[col] === value && r !== currentGrid[row]
-    );
-
-    if (!isCorrectAtPosition && (hasDuplicateInRow || hasDuplicateInCol)) {
+    if (hasDuplicates()) {
       classes.push("duplicate");
     }
 
