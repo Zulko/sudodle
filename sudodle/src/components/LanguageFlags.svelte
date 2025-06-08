@@ -1,31 +1,29 @@
 <script>
-  import { locale } from "svelte-i18n";
-
-  // Two-way binding with the parent component
-  export let currentLocale = $locale;
+  import { locale, isLoading } from "svelte-i18n";
 
   function switchLanguage(lang) {
-    currentLocale = lang;
     $locale = lang;
   }
 </script>
 
-<div class="language-flags">
-  <button
-    class="flag-btn {currentLocale === 'en' ? 'active' : ''}"
-    onclick={() => switchLanguage("en")}
-    title="English"
-  >
-    🇺🇸
-  </button>
-  <button
-    class="flag-btn {currentLocale === 'fr' ? 'active' : ''}"
-    onclick={() => switchLanguage("fr")}
-    title="Français"
-  >
-    🇫🇷
-  </button>
-</div>
+{#if !$isLoading}
+  <div class="language-flags">
+    <button
+      class="flag-btn {$locale.startsWith('en') ? 'active' : ''}"
+      onclick={() => switchLanguage("en")}
+      title="English"
+    >
+      🇺🇸
+    </button>
+    <button
+      class="flag-btn {$locale === 'fr' ? 'active' : ''}"
+      onclick={() => switchLanguage("fr")}
+      title="Français"
+    >
+      🇫🇷
+    </button>
+  </div>
+{/if}
 
 <style>
   .language-flags {

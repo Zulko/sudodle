@@ -221,7 +221,7 @@
   </div>
 {:else}
   <main>
-    <LanguageFlags bind:currentLocale={$locale} />
+    <LanguageFlags />
 
     <div class="container">
       <h1>{$_("title")}</h1>
