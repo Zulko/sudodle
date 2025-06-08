@@ -357,7 +357,7 @@
   }
 
   .language-flags {
-    position: fixed;
+    position: absolute;
     top: 0.75rem;
     right: 0.75rem;
     display: flex;
