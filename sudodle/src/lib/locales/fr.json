@@ -1,6 +1,6 @@
 {
   "title": "Sudodle",
-  "rules": "Trouvez l'arrangement correct des nombres où chacun apparaît une fois dans chaque ligne et colonne. Après chaque tentative, voyez quelles cases sont correctement placées !",
+  "rules": "Devinez la grille cachée, sachant que chaque nombre apparaît une fois par ligne et colonne. Cliquez sur \"Vérifier\" pour voir les cases correctement placées.",
   "checking": "Vérification...",
   "check": "Vérifier",
   "checkWithGuesses": "Vérifier ({count} tentatives restantes)",

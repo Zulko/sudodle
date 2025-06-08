@@ -225,24 +225,25 @@
   </div>
 {:else}
   <main>
+    <div class="language-flags">
+      <button
+        class="flag-btn {$locale === 'en' ? 'active' : ''}"
+        onclick={() => switchLanguage("en")}
+        title="English"
+      >
+        🇺🇸
+      </button>
+      <button
+        class="flag-btn {$locale === 'fr' ? 'active' : ''}"
+        onclick={() => switchLanguage("fr")}
+        title="Français"
+      >
+        🇫🇷
+      </button>
+    </div>
+
     <div class="container">
-      <div class="header">
-        <h1>{$_("title")}</h1>
-        <div class="language-switcher">
-          <button
-            class="lang-btn {$locale === 'en' ? 'active' : ''}"
-            onclick={() => switchLanguage("en")}
-          >
-            EN
-          </button>
-          <button
-            class="lang-btn {$locale === 'fr' ? 'active' : ''}"
-            onclick={() => switchLanguage("fr")}
-          >
-            FR
-          </button>
-        </div>
-      </div>
+      <h1>{$_("title")}</h1>
 
       <div class="rules">
         <p>
@@ -355,6 +356,43 @@
     }
   }
 
+  .language-flags {
+    position: fixed;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    gap: 0.25rem;
+    z-index: 100;
+  }
+
+  .flag-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.25rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    opacity: 0.6;
+  }
+
+  .flag-btn:hover {
+    opacity: 0.9;
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .flag-btn.active {
+    opacity: 1;
+    border-color: rgba(52, 152, 219, 0.4);
+    background: rgba(255, 255, 255, 0.9);
+  }
+
   .container {
     max-width: 400px;
     margin: 0 auto;
@@ -363,49 +401,12 @@
       sans-serif;
   }
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-
   h1 {
+    text-align: center;
     color: #2c3e50;
-    margin: 0;
+    margin-top: 0;
+    margin-bottom: 2rem;
     font-size: 2.5rem;
-  }
-
-  .language-switcher {
-    display: flex;
-    gap: 0.25rem;
-    background: #f8f9fa;
-    border-radius: 0.375rem;
-    padding: 0.25rem;
-    border: 1px solid #e9ecef;
-  }
-
-  .lang-btn {
-    padding: 0.375rem 0.75rem;
-    border: none;
-    background: transparent;
-    color: #6c757d;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .lang-btn:hover {
-    background: #ffffff;
-    color: #495057;
-  }
-
-  .lang-btn.active {
-    background: #3498db;
-    color: white;
-    box-shadow: 0 1px 3px rgba(52, 152, 219, 0.3);
   }
 
   .rules {
@@ -519,6 +520,17 @@
 
   /* Responsive design */
   @media (max-width: 480px) {
+    .language-flags {
+      top: 0.5rem;
+      right: 0.5rem;
+    }
+
+    .flag-btn {
+      width: 28px;
+      height: 28px;
+      font-size: 0.8rem;
+    }
+
     .container {
       padding: 0.5rem;
     }
@@ -543,6 +555,16 @@
       color: #ccc;
     }
 
+    .flag-btn {
+      background: rgba(30, 30, 30, 0.7);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .flag-btn:hover {
+      opacity: 0.9;
+      background: rgba(30, 30, 30, 0.8);
+    }
+
     .container {
       background-color: #0f0f0f;
       color: #ffffff;
@@ -550,25 +572,6 @@
 
     h1 {
       color: #ffffff;
-    }
-
-    .language-switcher {
-      background: #2a2a2a;
-      border: 1px solid #444;
-    }
-
-    .lang-btn {
-      color: #aaa;
-    }
-
-    .lang-btn:hover {
-      background: #333;
-      color: #fff;
-    }
-
-    .lang-btn.active {
-      background: #3498db;
-      color: white;
     }
 
     .rules p {
