@@ -270,6 +270,9 @@
           >
             ↻ New Game
           </button>
+          <button onclick={shareGame} class="discrete-btn share-btn">
+            🔗 Share this Puzzle
+          </button>
         </div>
       {/if}
     </section>
@@ -356,24 +359,30 @@
   .bottom-actions {
     margin-top: 3rem;
     text-align: center;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .discrete-btn {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 1px solid #dee2e6;
-    padding: 0.5rem 1rem;
+    background: #fafafa;
+    color: #999;
+    border: 1px solid #eee;
+    padding: 0.4rem 0.8rem;
     border-radius: 0.25rem;
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 400;
     cursor: pointer;
     transition: all 0.2s;
+    flex: 0 1 auto;
+    white-space: nowrap;
   }
 
   .discrete-btn:hover {
-    background: #e9ecef;
-    color: #495057;
-    border-color: #adb5bd;
+    background: #f5f5f5;
+    color: #777;
+    border-color: #ddd;
   }
 
   .discrete-btn.out-of-tries {
@@ -388,6 +397,18 @@
     border-color: #2980b9;
   }
 
+  .discrete-btn.share-btn {
+    background: #fafafa;
+    color: #999;
+    border: 1px solid #eee;
+  }
+
+  .discrete-btn.share-btn:hover {
+    background: #f5f5f5;
+    color: #777;
+    border-color: #ddd;
+  }
+
   /* Responsive design */
   @media (max-width: 480px) {
     .container {
@@ -396,6 +417,10 @@
 
     h1 {
       font-size: 2rem;
+    }
+
+    .bottom-actions {
+      gap: 0.5rem;
     }
   }
 
@@ -428,15 +453,15 @@
     }
 
     .discrete-btn {
-      background: #2a2a2a;
-      color: #aaa;
-      border: 1px solid #555;
+      background: #1a1a1a;
+      color: #666;
+      border: 1px solid #333;
     }
 
     .discrete-btn:hover {
-      background: #333;
-      color: #ccc;
-      border-color: #777;
+      background: #222;
+      color: #888;
+      border-color: #444;
     }
 
     .discrete-btn.out-of-tries {
@@ -448,6 +473,18 @@
     .discrete-btn.out-of-tries:hover {
       background: #2980b9;
       border-color: #2980b9;
+    }
+
+    .discrete-btn.share-btn {
+      background: #1a1a1a;
+      color: #666;
+      border: 1px solid #333;
+    }
+
+    .discrete-btn.share-btn:hover {
+      background: #222;
+      color: #888;
+      border-color: #444;
     }
   }
 </style>
