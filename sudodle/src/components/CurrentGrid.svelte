@@ -249,7 +249,7 @@
       // Clear the highlight after animation
       setTimeout(() => {
         recentlySwapped = [];
-      }, 600);
+      }, 800);
     }
 
     draggedTile = null;
@@ -493,7 +493,7 @@
 
   /* Recently swapped tiles pulse effect */
   .tile.recently-swapped {
-    animation: swapPulse 0.6s ease-out;
+    animation: swapPulse 0.8s ease-out;
     z-index: 20;
   }
 
@@ -503,8 +503,8 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     50% {
-      transform: translateZ(0) scale(1.15);
-      box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
+      transform: translateZ(0) scale(1.05);
+      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
     }
     100% {
       transform: translateZ(0) scale(1);
@@ -632,8 +632,8 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
       50% {
-        transform: translateZ(0) scale(1.15);
-        box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5);
+        transform: translateZ(0) scale(1.05);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
       }
       100% {
         transform: translateZ(0) scale(1);
