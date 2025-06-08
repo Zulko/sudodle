@@ -128,7 +128,7 @@
     border-radius: 0.5rem;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     max-width: 400px;
-    width: 90%;
+    width: 95%;
     margin: 1rem;
     max-height: 90vh;
     overflow-y: auto;
