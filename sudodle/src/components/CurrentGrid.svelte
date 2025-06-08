@@ -490,6 +490,7 @@
   /* Recently swapped tiles pulse effect */
   .tile.recently-swapped {
     animation: swapPulse 0.6s ease-out;
+    z-index: 20;
   }
 
   @keyframes swapPulse {
