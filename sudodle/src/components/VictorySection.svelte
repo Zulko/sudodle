@@ -23,6 +23,7 @@
         rel="noopener noreferrer"
       >
         visit the project on Github
+        <img src="/github-icon.svg" alt="GitHub" class="github-icon" />
       </a>
     </p>
   </div>
@@ -126,6 +127,12 @@
     text-decoration-color: #3498db;
   }
 
+  .github-icon {
+    height: 1rem;
+    width: auto;
+    margin-left: 0.25rem;
+  }
+
   @keyframes gentle-bounce {
     0%,
     20%,
@@ -200,6 +207,10 @@
     .github-link a:hover {
       color: #3498db;
       text-decoration-color: #3498db;
+    }
+
+    .github-icon {
+      filter: brightness(0) invert(1);
     }
   }
 </style>
