@@ -1,18 +1,17 @@
 <script>
   import { _, locale } from "svelte-i18n";
-  export let onNewGame;
-  export let onShareGame;
-  export let guessCount;
+  let { onNewGame, onShareGame, guessCount } = $props();
 
   // Helper function for pluralization based on language
-  $: plural =
+  let plural = $derived(
     $locale === "fr"
       ? guessCount === 1
         ? ""
         : "s" // French: tentative/tentatives
       : guessCount === 1
         ? ""
-        : "es"; // English: guess/guesses
+        : "es" // English: guess/guesses
+  );
 </script>
 
 <div class="victory">
