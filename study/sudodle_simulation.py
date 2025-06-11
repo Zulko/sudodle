@@ -20,9 +20,13 @@ Functions:
 """
 
 import random
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from tqdm.auto import tqdm
+import itertools
 
 
-def backtracked_random_latin_square(N, seed=None):
+def backtracked_random_latin_square(N, seed=None, timeout=None):
     """
     Generate a single N×N Latin square in a reproducible (pseudo-random) way.
 
@@ -59,8 +63,12 @@ def backtracked_random_latin_square(N, seed=None):
     row_used = [0] * N  # row_used[i] has bit v set iff v+1 is already in row i
     col_used = [0] * N  # col_used[j] has bit v set iff v+1 is already in column j
     full_mask = (1 << N) - 1  # bits 0..N-1 all set
+    initial_time = time.time()
 
     def backtrack(cell=0):
+        if timeout is not None:
+            if time.time() - initial_time > timeout:
+                raise TimeoutError("Backtracking timed out")
         # cell runs from 0..N*N-1 in row-major order
         if cell == N * N:
             return True  # filled every cell successfully
@@ -104,6 +112,14 @@ def backtracked_random_latin_square(N, seed=None):
 
     success = backtrack(0)
     return square if success else None
+
+
+def backtracked_random_latin_square_with_timeout_retries(N, seed=None, timeout=1):
+    while True:
+        try:
+            return backtracked_random_latin_square(N, seed, timeout=timeout)
+        except TimeoutError:
+            pass
 
 
 def cyclic_latin_square(N):
@@ -209,7 +225,7 @@ def uniform_random_latin_square(N, seed=None, burn_in_steps=None):
         stationary distribution, giving approximately uniform sampling.
     """
     rng = random.Random(seed)
-    L = backtracked_random_latin_square(N, seed=seed)
+    L = backtracked_random_latin_square_with_timeout_retries(N, seed=seed, timeout=1)
 
     if burn_in_steps is None:
         burn_in_steps = 50 * (N**2)
@@ -222,17 +238,19 @@ def uniform_random_latin_square(N, seed=None, burn_in_steps=None):
     return L
 
 
-def complete_latin_square_backtrack(
+def complete_latin_square_backtrack_all_solutions(
     size=5,
     known_values={},
     known_wrong_values={},
+    timeout=2,
+    max_solutions=None,
 ):
     """
-    Complete a partial Latin square using optimized backtracking with constraints.
+    Find all completions of a partial Latin square using optimized backtracking with constraints.
 
     This function takes a partially filled Latin square with known correct values
     and known incorrect values, then uses backtracking with the Most Constrained
-    Variable (MCV) heuristic to find a valid completion.
+    Variable (MCV) heuristic to find all valid completions.
 
     Parameters:
         size (int): Size of the Latin square (N×N). Default is 5.
@@ -242,27 +260,29 @@ def complete_latin_square_backtrack(
         known_wrong_values (dict): Dictionary mapping (row, col) tuples to lists
             of values that are known to be wrong for that cell.
             Example: {(0, 0): [1, 2]} means cell (0,0) cannot be 1 or 2.
+        timeout (float): Maximum time to spend searching (in seconds). Default is 2.
+        max_solutions (int or None): Maximum number of solutions to find. If None,
+            finds all solutions. If set, stops when this many solutions are found.
 
     Returns:
-        List[List[int]]: A completed N×N Latin square with values 1 to N,
-        or None if no valid completion exists.
+        List[List[List[int]]]: A list of completed N×N Latin squares with values 1 to N.
+        Returns empty list if no valid completion exists.
 
     Example:
-        >>> # Complete a 3×3 square with some known values
+        >>> # Find all completions of a 3×3 square with some known values
         >>> known = {(0, 0): 1, (1, 1): 2}
         >>> wrong = {(0, 1): [1, 3]}
-        >>> square = complete_latin_square_backtrack(3, known, wrong)
-        >>> square[0][0]
-        1
-        >>> square[1][1]
-        2
+        >>> solutions = complete_latin_square_backtrack_all_solutions(3, known, wrong, max_solutions=5)
+        >>> len(solutions)  # Number of solutions found (up to 5)
+        3
 
     Algorithm:
         1. Initialize square with known values
         2. Use MCV heuristic to select the most constrained empty cell
         3. Try all valid values for that cell
         4. Recursively solve the remaining cells
-        5. Backtrack if no valid solution is found
+        5. When a complete solution is found, save it and continue searching
+        6. Stop when max_solutions is reached or all possibilities are exhausted
 
     Note:
         The MCV heuristic significantly improves performance by tackling
@@ -270,6 +290,8 @@ def complete_latin_square_backtrack(
     """
     # Initialize the square with -1 for unknown cells
     square = [[-1] * size for _ in range(size)]
+    initial_time = time.time()
+    solutions = []
 
     # Fill in known values
     for (i, j), value in known_values.items():
@@ -343,21 +365,35 @@ def complete_latin_square_backtrack(
         return True
 
     def backtrack():
-        """Recursive backtracking function"""
+        if timeout is not None:
+            if time.time() - initial_time > timeout:
+                raise TimeoutError("Backtracking timed out")
+
+        # Check if we've found enough solutions
+        if max_solutions is not None and len(solutions) >= max_solutions:
+            return
+
         # Find the most constrained empty cell
         cell, num_choices = find_most_constrained_cell()
 
         if cell is None:
-            return True  # All cells filled successfully
+            # All cells filled successfully - save this solution
+            solution = [row[:] for row in square]  # Deep copy
+            solutions.append(solution)
+            return
 
         if num_choices == 0:
-            return False  # Dead end
+            return  # Dead end
 
         i, j = cell
         candidates = get_available_values(i, j)
 
         # Try each candidate value
         for value in candidates:
+            # Early termination check
+            if max_solutions is not None and len(solutions) >= max_solutions:
+                return
+
             bit = 1 << (value - 1)
 
             # Place the value
@@ -366,36 +402,35 @@ def complete_latin_square_backtrack(
             col_used[j] |= bit
 
             # Quick validity check before deeper recursion
-            if is_valid_partial() and backtrack():
-                return True
+            if is_valid_partial():
+                backtrack()
 
             # Backtrack: remove the value
             square[i][j] = -1
             row_used[i] ^= bit
             col_used[j] ^= bit
 
-        return False  # No valid value worked
-
     # Validate that known values don't violate Latin square constraints
     for i in range(size):
         row_values = [square[i][j] for j in range(size) if square[i][j] != -1]
         if len(row_values) != len(set(row_values)):
-            return None  # Duplicate values in row
+            return []  # Duplicate values in row
 
     for j in range(size):
         col_values = [square[i][j] for i in range(size) if square[i][j] != -1]
         if len(col_values) != len(set(col_values)):
-            return None  # Duplicate values in column
+            return []  # Duplicate values in column
 
     # Initial validity check
     if not is_valid_partial():
-        return None
+        return []
 
-    # Try to complete the square
-    if backtrack():
-        return square
-    else:
-        return None
+    # Try to find all completions
+    try:
+        backtrack()
+        return solutions
+    except TimeoutError:
+        return solutions  # Return whatever solutions we found before timing out
 
 
 def compare_squares(square, expected_square):
@@ -441,7 +476,7 @@ def compare_squares(square, expected_square):
     return (right_values, wrong_values)
 
 
-def display_square(square):
+def square_to_string(square):
     """
     Display a Latin square in a readable format.
 
@@ -456,7 +491,7 @@ def display_square(square):
 
     Example:
         >>> square = [[1, 2, 3], [2, 3, 1], [3, 1, 2]]
-        >>> display_square(square)
+        >>> print(square_to_string(square))
         | 1 2 3
         | 2 3 1
         | 3 1 2
@@ -465,12 +500,10 @@ def display_square(square):
         Each row is prefixed with "| " for better visual separation.
         Values are separated by single spaces.
     """
-    for row in square:
-        print("| ", end="")
-        print(" ".join(str(cell) for cell in row))
+    return "\n".join("| " + " ".join(str(cell) for cell in row) for row in square)
 
 
-def simulate_game(N):
+def simulate_game(first_guess, verbose=False, solve_timeout=2):
     """
     Simulate a complete Sudodle game with up to 5 attempts.
 
@@ -518,31 +551,159 @@ def simulate_game(N):
         The game uses intelligent guessing by incorporating feedback from
         previous attempts, making it more likely to find the solution quickly.
     """
+
+    def verbose_print(s):
+        if verbose:
+            print(s)
+
+    N = len(first_guess)
     solution = uniform_random_latin_square(N)
-    print("solution:")
-    display_square(solution)
+    verbose_print("solution:\n" + square_to_string(solution))
     known_values = {}
     known_wrong_values = {}
+    history_of_known_values = []
 
-    guess = cyclic_latin_square(N)
+    guess = first_guess
 
-    for tries in range(1, 6):
-        print("\nguess:")
-        display_square(guess)
+    for _ in range(1, 6):
+        verbose_print("\nguess:\n" + square_to_string(guess))
         right_values, wrong_values = compare_squares(guess, solution)
+        history_of_known_values.append(len(known_values))
         if wrong_values == []:
-            print(f"Found solution in {tries} tries!")
-            break
+            return history_of_known_values[1:]
         for i, j, value in right_values:
             known_values[(i, j)] = value
         for i, j, value in wrong_values:
             if (i, j) not in known_wrong_values:
                 known_wrong_values[(i, j)] = []
             known_wrong_values[(i, j)].append(value)
-        print(f"Found {len(known_values)} known values so far")
-        guess = complete_latin_square_backtrack(N, known_values, known_wrong_values)
+        verbose_print(f"Found {len(known_values)} known values so far")
+        guess = complete_latin_square_backtrack(
+            N, known_values, known_wrong_values, timeout=solve_timeout
+        )
+        if guess is None:
+            return None
+
+
+def random_square(n):
+    numbers = [(i + 1) for i in range(n) for _ in range(n)]
+    random.shuffle(numbers)
+    return [numbers[i * n : (i + 1) * n] for i in range(n)]
+
+
+def run_multiple_simulations_in_parallel(first_guesses, n_processes=10):
+    with ProcessPoolExecutor(n_processes) as executor:
+        futures = [
+            executor.submit(simulate_game, first_guess) for first_guess in first_guesses
+        ]
+        results = []
+        for future in tqdm(as_completed(futures), total=len(futures)):
+            result = future.result(timeout=2)
+            results.append(result)
+        return results
+
+
+def complete_latin_square_backtrack(
+    size=5,
+    known_values={},
+    known_wrong_values={},
+    timeout=2,
+):
+    """
+    Complete a partial Latin square using optimized backtracking with constraints.
+
+    This is a convenience wrapper around complete_latin_square_backtrack_all_solutions
+    that returns only the first solution found.
+
+    Parameters:
+        size (int): Size of the Latin square (N×N). Default is 5.
+        known_values (dict): Dictionary mapping (row, col) tuples to known correct
+            values. Example: {(0, 1): 3, (2, 0): 1} means cell (0,1) must be 3
+            and cell (2,0) must be 1.
+        known_wrong_values (dict): Dictionary mapping (row, col) tuples to lists
+            of values that are known to be wrong for that cell.
+            Example: {(0, 0): [1, 2]} means cell (0,0) cannot be 1 or 2.
+        timeout (float): Maximum time to spend searching (in seconds). Default is 2.
+
+    Returns:
+        List[List[int]]: A completed N×N Latin square with values 1 to N,
+        or None if no valid completion exists.
+    """
+    solutions = complete_latin_square_backtrack_all_solutions(
+        size, known_values, known_wrong_values, timeout, max_solutions=1
+    )
+    return solutions[0] if solutions else None
+
+
+def standardize_tile_tuple(N, correct_tiles):
+    return min(
+        [
+            tuple(sorted(correct_tiles)),
+            tuple(sorted((j, i) for i, j in correct_tiles)),
+        ]
+    )
+
+
+def find_single_solution_puzzles(grid, n_well_placed):
+    standard_tile_tuples = set()
+    N = len(grid)
+    tile_coordinates = [(i, j) for i in range(N) for j in range(N)]
+    selected_solutions = []
+    for selected_tiles in tqdm(itertools.combinations(tile_coordinates, n_well_placed)):
+        standardized_tiles = standardize_tile_tuple(N, selected_tiles)
+        if standardized_tiles in standard_tile_tuples:
+            continue
+        standard_tile_tuples.add(standardized_tiles)
+        known_values = {}
+        known_wrong_values = {}
+        for i, j in tile_coordinates:
+            if (i, j) in selected_tiles:
+                known_values[(i, j)] = grid[i][j]
+            else:
+                known_wrong_values[(i, j)] = [grid[i][j]]
+        solutions = complete_latin_square_backtrack_all_solutions(
+            N, known_values, known_wrong_values, max_solutions=2
+        )
+        if len(solutions) == 1:
+            selected_solutions.append((selected_tiles, solutions[0]))
+    return selected_solutions
 
 
 if __name__ == "__main__":
-    # Run a sample game simulation with a 5×5 Latin square
-    simulate_game(9)
+    first_guess = cyclic_latin_square(5)
+    tries = simulate_game(first_guess, verbose=True)
+    print(f"Found solution in {len(tries) + 1} tries!")
+
+
+def parse_puzzles_from_txt(txt_file, grid_size, standardize_tiles=True):
+    with open(txt_file, "r") as f:
+        lines = f.readlines()
+
+    def parse_line(line):
+        """Parse a line into coordinate tuples, handling potential format issues."""
+        line = line.strip()
+        if not line:  # Skip empty lines
+            return None
+        try:
+            # Split by commas and clean up each coordinate pair
+            coords = line.split(", ")
+            # Convert each "(x,y)" string into a tuple of ints
+            tiles = [tuple(map(int, coord.strip("()").split(","))) for coord in coords]
+            return tiles
+        except (ValueError, IndexError) as e:
+            print(f"Warning: Could not parse line '{line}': {e}")
+            return None
+
+    puzzles = []
+    seen_standardized_puzzles = set()
+    for line in lines:
+        tiles = parse_line(line)
+        if tiles is not None:
+            if standardize_tiles:
+                standardized_tiles = standardize_tile_tuple(grid_size, tiles)
+                if standardized_tiles not in seen_standardized_puzzles:
+                    puzzles.append(tiles)
+                    seen_standardized_puzzles.add(standardized_tiles)
+            else:
+                puzzles.append(tiles)
+    return puzzles

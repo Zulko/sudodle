@@ -1,0 +1,29 @@
+[package]
+name = "puzzle_finder"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "find_puzzles"
+path = "find_puzzles.rs"
+
+[dependencies]
+rayon = "1.8"
+clap = { version = "4.4", features = ["derive"] }
+rand = "0.8"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+# Additional optimizations (uncomment if needed)
+# strip = true              # Remove debug symbols for smaller binary
+# overflow-checks = false   # Disable integer overflow checks (unsafe but faster)
+# debug-assertions = false  # Disable debug assertions
+
+# For extreme optimization (may increase compile time significantly):
+# [profile.release-lto]
+# inherits = "release"
+# lto = "fat"              # More aggressive LTO
+# codegen-units = 1
