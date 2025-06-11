@@ -16,6 +16,11 @@
   let touchStartPosition = null;
   let isDragging = false;
   let currentTouchPosition = null;
+  let clickedTiles = []; // Track recently clicked tiles for pulse effect
+  let dragStartTime = null; // Track when drag started to distinguish from clicks
+  let touchStartTime = null; // Track when touch started
+  let hasTouchMoved = false; // Track if touch has moved significantly
+  let lastTouchHandled = 0; // Prevent double handling of touch + click
 
   // Create stable tiles with unique keys based on content
   let tiles = [];
@@ -116,6 +121,7 @@
     draggedIndex,
     isDragging,
     recentlySwapped,
+    clickedTiles,
     (() => {
       // This reactive statement ensures tiles re-render when hover state changes
     })();
@@ -123,6 +129,7 @@
   function handleDragStart(event, tileIndex) {
     draggedTile = tiles[tileIndex];
     draggedIndex = tileIndex;
+    dragStartTime = Date.now();
     event.dataTransfer.effectAllowed = "move";
   }
 
@@ -176,11 +183,13 @@
   function handleTouchStart(event, tileIndex) {
     draggedTile = tiles[tileIndex];
     draggedIndex = tileIndex;
+    touchStartTime = Date.now();
+    hasTouchMoved = false;
     touchStartPosition = {
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
     };
-    isDragging = true;
+    // Don't set isDragging immediately - wait for movement
     currentTouchPosition = {
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
@@ -188,18 +197,33 @@
   }
 
   function handleTouchMove(event) {
-    event.preventDefault(); // Prevent scrolling - now safe since we use non-passive listeners
-    if (isDragging && draggedIndex !== null) {
+    if (draggedIndex === null || !touchStartPosition) return;
+
+    const currentX = event.touches[0].clientX;
+    const currentY = event.touches[0].clientY;
+
+    // Calculate movement distance
+    const deltaX = Math.abs(currentX - touchStartPosition.x);
+    const deltaY = Math.abs(currentY - touchStartPosition.y);
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    // If moved significantly, start dragging
+    if (distance > 10 && !hasTouchMoved) {
+      hasTouchMoved = true;
+      isDragging = true;
+      dragStartTime = Date.now();
+      event.preventDefault(); // Prevent scrolling only when dragging
+    }
+
+    if (isDragging) {
+      event.preventDefault(); // Prevent scrolling - now safe since we use non-passive listeners
       currentTouchPosition = {
-        x: event.touches[0].clientX,
-        y: event.touches[0].clientY,
+        x: currentX,
+        y: currentY,
       };
 
       // Find which tile is being hovered over during touch drag
-      const elementBelow = document.elementFromPoint(
-        event.touches[0].clientX,
-        event.touches[0].clientY
-      );
+      const elementBelow = document.elementFromPoint(currentX, currentY);
 
       if (elementBelow && elementBelow.classList.contains("tile")) {
         const targetIndex = parseInt(elementBelow.getAttribute("data-index"));
@@ -215,24 +239,36 @@
   function handleTouchEnd(event) {
     if (draggedIndex === null || !touchStartPosition) return;
 
-    const touch = event.changedTouches[0];
-    const elementBelow = document.elementFromPoint(
-      touch.clientX,
-      touch.clientY
-    );
+    // If this was a tap (no significant movement), handle as click
+    if (!hasTouchMoved && touchStartTime && Date.now() - touchStartTime < 300) {
+      handleTileClick(event, draggedIndex);
+      lastTouchHandled = Date.now(); // Set after handling to prevent synthetic click
+    } else if (isDragging) {
+      // Handle as drag operation
+      const touch = event.changedTouches[0];
+      const elementBelow = document.elementFromPoint(
+        touch.clientX,
+        touch.clientY
+      );
 
-    if (elementBelow && elementBelow.classList.contains("tile")) {
-      const targetIndex = parseInt(elementBelow.getAttribute("data-index"));
-      if (!isNaN(targetIndex)) {
-        swapTiles(targetIndex);
+      if (elementBelow && elementBelow.classList.contains("tile")) {
+        const targetIndex = parseInt(elementBelow.getAttribute("data-index"));
+        if (!isNaN(targetIndex)) {
+          swapTiles(targetIndex);
+        }
       }
     }
 
     // Reset touch state
     touchStartPosition = null;
+    touchStartTime = null;
+    hasTouchMoved = false;
     isDragging = false;
     currentTouchPosition = null;
     hoveredIndex = null;
+    draggedTile = null;
+    draggedIndex = null;
+    dragStartTime = null;
   }
 
   function swapTiles(targetIndex) {
@@ -267,6 +303,7 @@
 
     draggedTile = null;
     draggedIndex = null;
+    dragStartTime = null;
   }
 
   function getTileClasses(tileIndex, value) {
@@ -308,6 +345,10 @@
       classes.push("recently-swapped");
     }
 
+    if (clickedTiles.some((pos) => pos.row === row && pos.col === col)) {
+      classes.push("clicked-pulse");
+    }
+
     // Handle immediate feedback (highest priority)
     if (feedback?.[row]?.[col] !== undefined) {
       if (feedback[row][col]) {
@@ -337,6 +378,51 @@
     }
 
     return classes.join(" ");
+  }
+
+  // Handle tile click to increment value
+  function handleTileClick(event, tileIndex) {
+    // Prevent double handling from touch + click events (short window for synthetic clicks)
+    const now = Date.now();
+    if (now - lastTouchHandled < 100) {
+      return;
+    }
+
+    // Don't process click if we were dragging
+    if (dragStartTime && now - dragStartTime < 200) {
+      return;
+    }
+
+    const tile = tiles[tileIndex];
+    const { row, col } = indexToRowCol(tileIndex);
+
+    // Increment value: 1->2->3->...->gridSize->0->1
+    let newValue;
+    if (tile.value === 0) {
+      newValue = 1;
+    } else if (tile.value >= gridSize) {
+      newValue = 1;
+    } else {
+      newValue = tile.value + 1;
+    }
+
+    // Update the tile value
+    const newTiles = [...tiles];
+    newTiles[tileIndex] = { ...tile, value: newValue };
+    tiles = newTiles;
+
+    // Update the grid
+    updateCurrentGrid();
+
+    // Add pulse effect
+    clickedTiles = [...clickedTiles, { row, col, timestamp: Date.now() }];
+
+    // Remove pulse effect after animation
+    setTimeout(() => {
+      clickedTiles = clickedTiles.filter(
+        (ct) => ct.row !== row || ct.col !== col
+      );
+    }, 600);
   }
 
   // Set up non-passive touch event listeners to prevent console errors
@@ -379,6 +465,7 @@
         ondrop={(e) => handleDrop(e, index)}
         ontouchstart={(e) => handleTouchStart(e, index)}
         ontouchend={handleTouchEnd}
+        onclick={(e) => handleTileClick(e, index)}
         role="gridcell"
         tabindex="0"
         aria-label="Tile at row {row + 1}, column {col + 1}, value {tile.value}"
@@ -513,6 +600,12 @@
     z-index: 20;
   }
 
+  /* Clicked tiles pulse effect */
+  .tile.clicked-pulse {
+    animation: clickPulse 0.6s ease-out;
+    z-index: 15;
+  }
+
   @keyframes swapPulse {
     0% {
       transform: translateZ(0) scale(1);
@@ -525,6 +618,22 @@
     100% {
       transform: translateZ(0) scale(1);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  @keyframes clickPulse {
+    0% {
+      transform: translateZ(0) scale(1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    50% {
+      transform: translateZ(0) scale(1.08);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      background: #f8f9fa;
+    }
+    100% {
+      transform: translateZ(0) scale(1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
   }
 
@@ -652,6 +761,22 @@
       background: #f1ccc6;
       color: #cf5910;
       font-weight: 700;
+    }
+
+    @keyframes clickPulse {
+      0% {
+        transform: translateZ(0) scale(1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+      50% {
+        transform: translateZ(0) scale(1.08);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        background: #333;
+      }
+      100% {
+        transform: translateZ(0) scale(1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
     }
     /* 
     .dragging-tile {

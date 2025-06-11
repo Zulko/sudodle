@@ -21,7 +21,7 @@
   "shareTitle": "Puzzle Sudodle",
   "shareWinTitle": "J'ai résolu ce Sudodle en {count} coups !",
   "urlCopied": "URL du puzzle copiée dans le presse-papiers !",
-  "dragTilesInstruction": "Glissez une case sur l'autre pour les échanger",
+  "dragTilesInstruction": "Cliquez une case pour changer le chiffre, ou glissez une case sur l'autre pour les échanger",
   "guess": "tentative",
   "ordinalSt": "ère",
   "ordinalNd": "ème",
