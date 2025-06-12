@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { flip } from "svelte/animate";
   import { _ } from "svelte-i18n";
 
@@ -381,7 +381,7 @@
   }
 
   // Handle tile click to increment value
-  function handleTileClick(event, tileIndex) {
+  async function handleTileClick(event, tileIndex) {
     // Prevent double handling from touch + click events (short window for synthetic clicks)
     const now = Date.now();
     if (now - lastTouchHandled < 100) {
@@ -414,6 +414,12 @@
     // Update the grid
     updateCurrentGrid();
 
+    // Remove any existing pulse for this tile to force reflow
+    clickedTiles = clickedTiles.filter(
+      (ct) => ct.row !== row || ct.col !== col
+    );
+    await tick(); // Wait for DOM update
+
     // Add pulse effect
     clickedTiles = [...clickedTiles, { row, col, timestamp: Date.now() }];
 
@@ -422,7 +428,7 @@
       clickedTiles = clickedTiles.filter(
         (ct) => ct.row !== row || ct.col !== col
       );
-    }, 600);
+    }, 300); // match the animation duration
   }
 
   // Set up non-passive touch event listeners to prevent console errors
@@ -466,6 +472,7 @@
         ontouchstart={(e) => handleTouchStart(e, index)}
         ontouchend={handleTouchEnd}
         onclick={(e) => handleTileClick(e, index)}
+        onkeydown={(e) => handleTileClick(e, index)}
         role="gridcell"
         tabindex="0"
         aria-label="Tile at row {row + 1}, column {col + 1}, value {tile.value}"
@@ -551,7 +558,11 @@
     border-radius: var(--border-radius, 10px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     cursor: grab;
-    transition: all 0.2s ease;
+    /* Only transition box-shadow, background, and color, not transform */
+    transition:
+      box-shadow 0.2s,
+      background 0.2s,
+      color 0.2s;
     user-select: none;
     touch-action: none;
     /* Prevent layout shifts from transforms */
@@ -602,7 +613,7 @@
 
   /* Clicked tiles pulse effect */
   .tile.clicked-pulse {
-    animation: clickPulse 0.6s ease-out;
+    animation: clickPulse 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 15;
   }
 
@@ -624,16 +635,12 @@
   @keyframes clickPulse {
     0% {
       transform: translateZ(0) scale(1);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
     50% {
-      transform: translateZ(0) scale(1.08);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-      background: #f8f9fa;
+      transform: translateZ(0) scale(1.15);
     }
     100% {
       transform: translateZ(0) scale(1);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
   }
 
@@ -762,129 +769,5 @@
       color: #cf5910;
       font-weight: 700;
     }
-
-    @keyframes clickPulse {
-      0% {
-        transform: translateZ(0) scale(1);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      }
-      50% {
-        transform: translateZ(0) scale(1.08);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-        background: #333;
-      }
-      100% {
-        transform: translateZ(0) scale(1);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      }
-    }
-    /* 
-    .dragging-tile {
-      background: #2a2a2a;
-      border: 1px solid #555;
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-
-
-
-    .tile:hover {
-      background: #333;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
-    }
-
-    .tile.drag-hover {
-      background: #1a4c7d !important;
-      border-color: #2196f3 !important;
-      box-shadow: 0 8px 16px rgba(52, 152, 219, 0.6) !important;
-    }
-
-    @keyframes swapPulse {
-      0% {
-        transform: translateZ(0) scale(1);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
-      50% {
-        transform: translateZ(0) scale(1.15);
-        box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5);
-      }
-      100% {
-        transform: translateZ(0) scale(1);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
-    }
-      */
-
-    /* Visual cues for dark mode */
-    /*
-    .tile.correct-previous {
-      background: #28a745;
-      color: #ffffff;
-    }
-
-    .tile.incorrect-previous {
-      background: #dcb773;
-      color: #64635f;
-      font-weight: 700;
-    }
-
-    .tile.duplicate {
-      background: #2a2a2a;
-      color: #ff8c42;
-      font-weight: 700;
-    }
-    */
-    /* Immediate feedback styles for dark mode */
-    /*
-    .tile.feedback-correct {
-      background: #28a745;
-      color: #ffffff;
-      font-weight: 700;
-    }
-
-    .tile.feedback-correct-new {
-      background: #28a745;
-      color: #ffffff;
-      font-weight: 700;
-    }
-
-    @keyframes correctPulse {
-      0% {
-        transform: translateZ(0) scale(1);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      }
-      50% {
-        transform: translateZ(0) scale(1.1);
-        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.6);
-      }
-      100% {
-        transform: translateZ(0) scale(1);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      }
-    }
-
-    /* Combination: both previously incorrect AND duplicate */
-    /*
-    .tile.incorrect-previous.duplicate {
-      background: #f5cc80;
-      color: #ff8c42;
-      font-weight: 700;
-    }
-
-    /* Focus styles for dark mode */
-    /*
-    .tile:focus {
-      outline: none;
-      box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.3),
-        0 0 0 2px rgba(52, 152, 219, 0.5);
-    }
-
-    /* Drag feedback for dark mode */
-    /*
-    .tile:where([draggable="true"]:hover) {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    }
-  } */
   }
 </style>

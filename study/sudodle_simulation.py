@@ -586,6 +586,7 @@ def simulate_game(first_guess, verbose=False, solve_timeout=2):
 
 
 def random_square(n):
+    """Return a random nxn square with n ones, n twos, etc."""
     numbers = [(i + 1) for i in range(n) for _ in range(n)]
     random.shuffle(numbers)
     return [numbers[i * n : (i + 1) * n] for i in range(n)]
@@ -635,7 +636,7 @@ def complete_latin_square_backtrack(
     return solutions[0] if solutions else None
 
 
-def standardize_tile_tuple(N, correct_tiles):
+def standardize_tile_tuple(correct_tiles):
     return min(
         [
             tuple(sorted(correct_tiles)),
@@ -675,7 +676,7 @@ if __name__ == "__main__":
     print(f"Found solution in {len(tries) + 1} tries!")
 
 
-def parse_puzzles_from_txt(txt_file, grid_size, standardize_tiles=True):
+def parse_puzzles_from_txt(txt_file, standardize_tiles=True):
     with open(txt_file, "r") as f:
         lines = f.readlines()
 
@@ -700,7 +701,7 @@ def parse_puzzles_from_txt(txt_file, grid_size, standardize_tiles=True):
         tiles = parse_line(line)
         if tiles is not None:
             if standardize_tiles:
-                standardized_tiles = standardize_tile_tuple(grid_size, tiles)
+                standardized_tiles = standardize_tile_tuple(tiles)
                 if standardized_tiles not in seen_standardized_puzzles:
                     puzzles.append(tiles)
                     seen_standardized_puzzles.add(standardized_tiles)
