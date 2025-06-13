@@ -1,8 +1,14 @@
 <script>
   import { _ } from "svelte-i18n";
-  export let settings;
-  export let onStartGame;
-  export let onCancel;
+
+  let {
+    mode = $bindable(),
+    gridSize = $bindable(),
+    strictMode = $bindable(),
+    visualCues = $bindable(),
+    onStartGame,
+    onCancel,
+  } = $props();
 
   function handleKeydown(event) {
     if (event.key === "Escape") {
@@ -47,13 +53,31 @@
     <div class="modal-content">
       <div class="settings">
         <div class="settings-card">
+          <div class="setting-row mode-selection">
+            <div class="mode-buttons">
+              <button
+                class="mode-btn {mode === 'single-turn' ? 'active' : ''}"
+                onclick={() => (mode = "single-turn")}
+                type="button"
+              >
+                {$_("singleTurn")}
+              </button>
+              <button
+                class="mode-btn {mode === 'guesses' ? 'active' : ''}"
+                onclick={() => (mode = "guesses")}
+                type="button"
+              >
+                {$_("multipleGuesses")}
+              </button>
+            </div>
+          </div>
           <div class="setting-row">
             <div class="radio-group">
-              {#each [4, 5, 6, 7, 8, 9] as size}
+              {#each mode === "single-turn" ? [4, 5, 6, 7] : [4, 5, 6, 7, 8, 9] as size}
                 <label class="radio-item">
                   <input
                     type="radio"
-                    bind:group={settings.gridSize}
+                    bind:group={gridSize}
                     value={size}
                     aria-label="Grid size {size}x{size}"
                   />
@@ -62,36 +86,38 @@
               {/each}
             </div>
           </div>
-          <div class="setting-row">
-            <div class="switch-setting">
-              <div class="switch-container">
-                <label class="switch">
-                  <input
-                    type="checkbox"
-                    bind:checked={settings.visualCues}
-                    aria-label="Visual cues toggle"
-                  />
-                  <span class="slider"></span>
-                </label>
-                <span class="switch-text">{$_("visualCues")}</span>
+          {#if mode !== "single-turn"}
+            <div class="setting-row">
+              <div class="switch-setting">
+                <div class="switch-container">
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      bind:checked={visualCues}
+                      aria-label="Visual cues toggle"
+                    />
+                    <span class="slider"></span>
+                  </label>
+                  <span class="switch-text">{$_("visualCues")}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="setting-row">
-            <div class="switch-setting">
-              <div class="switch-container">
-                <label class="switch">
-                  <input
-                    type="checkbox"
-                    bind:checked={settings.strictMode}
-                    aria-label="Strict mode toggle"
-                  />
-                  <span class="slider"></span>
-                </label>
-                <span class="switch-text">{$_("strictMode")}</span>
+            <div class="setting-row">
+              <div class="switch-setting">
+                <div class="switch-container">
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      bind:checked={strictMode}
+                      aria-label="Strict mode toggle"
+                    />
+                    <span class="slider"></span>
+                  </label>
+                  <span class="switch-text">{$_("strictMode")}</span>
+                </div>
               </div>
             </div>
-          </div>
+          {/if}
         </div>
       </div>
     </div>
@@ -197,6 +223,7 @@
     margin: 0;
     display: flex;
     justify-content: center;
+    width: 100%;
   }
 
   .settings-card {
@@ -204,6 +231,7 @@
     padding: 0;
     border-radius: 0;
     box-shadow: none;
+    width: 100%;
   }
 
   .setting-row {
@@ -217,6 +245,44 @@
 
   .setting-row:last-child {
     margin-bottom: 0;
+  }
+
+  .mode-selection {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .mode-buttons {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .mode-btn {
+    flex: 1;
+    background: #ffffff;
+    border: 2px solid #e1e5e9;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #2c3e50;
+    text-align: center;
+  }
+
+  .mode-btn:hover {
+    border-color: #3498db;
+    background: #f8f9fa;
+    color: #2980b9;
+  }
+
+  .mode-btn.active {
+    border-color: #3498db;
+    background: #3498db;
+    color: #ffffff;
   }
 
   .radio-group {
@@ -359,6 +425,28 @@
     }
 
     .modal-header h3 {
+      color: #ffffff;
+    }
+
+    .mode-selection {
+      border-bottom: 1px solid #444;
+    }
+
+    .mode-btn {
+      background: #2a2a2a;
+      border: 2px solid #555;
+      color: #ffffff;
+    }
+
+    .mode-btn:hover {
+      border-color: #3498db;
+      background: #333;
+      color: #64b5f6;
+    }
+
+    .mode-btn.active {
+      border-color: #3498db;
+      background: #3498db;
       color: #ffffff;
     }
 

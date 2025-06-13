@@ -1,6 +1,7 @@
 {
   "title": "Sudodle",
-  "rules": "Find the correct arrangement of numbers where each appears once in every row and column. After each guess, see which tiles are correctly placed!",
+  "rulesGuesses": "Guess the hidden grid! There should be one of each number in every row and column. Green tiles are correct, yellow tiles are incorrect.",
+  "rulesSingleTurn": "Green tiles are correctly placed, yellow tiles are not. Find the correct arrangement knowing that each digit appears once in every row and column.",
   "checking": "Checking...",
   "check": "Check",
   "checkWithGuesses": "Check ({count} guesses left)",
@@ -21,10 +22,12 @@
   "shareTitle": "Sudodle Puzzle",
   "shareWinTitle": "I solved this Sudodle in {count} guesses!",
   "urlCopied": "Puzzle URL copied to clipboard!",
-  "dragTilesInstruction": "Tap a tile to change its number. Drag a tile on top of another to swap them",
+  "dragTilesInstruction": "Tap a tile to change it, or drag a tile on top of another to swap them",
   "guess": "guess",
   "ordinalSt": "st",
   "ordinalNd": "nd",
   "ordinalRd": "rd",
-  "ordinalTh": "th"
+  "ordinalTh": "th",
+  "multipleGuesses": "Multiple guesses",
+  "singleTurn": "Single turn"
 } 

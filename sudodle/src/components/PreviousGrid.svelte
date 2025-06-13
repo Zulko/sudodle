@@ -54,7 +54,12 @@
 </script>
 
 <div class="grid-container">
-  <div class="turn-label">{getOrdinal(previousGrid.turn)} {$_("guess")}</div>
+  {#if previousGrid.turn > 1}
+    <div class="turn-label">
+      {getOrdinal(previousGrid.turn - 1)}
+      {$_("guess")}
+    </div>
+  {/if}
   <div
     class="grid"
     style="--grid-size: {gridSize}; --border-radius: {borderRadius}px"

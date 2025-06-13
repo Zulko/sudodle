@@ -4,10 +4,10 @@
   import { _ } from "svelte-i18n";
 
   export let currentGrid;
-  export let visualCues = true;
-  export let previousGrids = [];
-  export let solutionGrid = [];
+  export let tilesShownCorrect = {}; // {tileIndex: valueShownCorrectAtThisPosition}
+  export let tilesShownWrong = {}; // {tileIndex: [tile values shown wrong at this position]}
   export let feedback = null;
+  export let mode = "guesses"; // "guesses" or "single-turn"
 
   let draggedTile = null;
   let draggedIndex = null;
@@ -25,6 +25,7 @@
   // Create stable tiles with unique keys based on content
   let tiles = [];
   let lastGameId = null;
+  let currentGameId = null;
 
   // Get the grid size
   $: gridSize = currentGrid.length;
@@ -42,12 +43,36 @@
     return radiusMap[gridSize] || Math.max(4, 14 - gridSize); // fallback formula
   })();
 
-  // Create a game identifier based on solution grid - when this changes, it's a new game
-  $: currentGameId =
-    solutionGrid.length > 0 ? solutionGrid.flat().join("-") : null;
+  // Create a game identifier based on current grid - when this changes, it's a new game
+  // Generate new ID when grid size changes, when initializing, or when grid content changes significantly
+  $: {
+    if (currentGrid.length > 0) {
+      // Create a content hash to detect when grid content changes (new game)
+      const gridContentHash = currentGrid.flat().join(",");
+      const expectedInitialContent = Array.from({ length: gridSize }, (_, i) =>
+        Array.from({ length: gridSize }, (_, j) => ((i + j) % gridSize) + 1)
+      )
+        .flat()
+        .join(",");
+
+      // Generate new ID if we don't have one, grid size changed, or we're back to initial cyclic state
+      if (
+        !currentGameId ||
+        currentGameId.split("-")[0] !== gridSize.toString() ||
+        gridContentHash === expectedInitialContent
+      ) {
+        currentGameId = `${gridSize}-${Date.now()}`;
+      }
+    } else {
+      currentGameId = null;
+    }
+  }
 
   // Initialize tiles with stable keys based on value and initial position
-  $: if (currentGrid.length > 0 && currentGameId !== lastGameId) {
+  $: if (
+    currentGrid.length > 0 &&
+    (currentGameId !== lastGameId || tiles.length !== gridSize * gridSize)
+  ) {
     tiles = [];
     for (let row = 0; row < currentGrid.length; row++) {
       for (let col = 0; col < currentGrid[row].length; col++) {
@@ -127,6 +152,18 @@
     })();
 
   function handleDragStart(event, tileIndex) {
+    // In single-turn mode, don't allow dragging tiles that were previously correct
+    if (mode === "single-turn") {
+      const currentValue = tiles[tileIndex].value;
+      if (
+        tileIndex in tilesShownCorrect &&
+        tilesShownCorrect[tileIndex] === currentValue
+      ) {
+        event.preventDefault();
+        return;
+      }
+    }
+
     draggedTile = tiles[tileIndex];
     draggedIndex = tileIndex;
     dragStartTime = Date.now();
@@ -181,6 +218,17 @@
 
   // Touch event handlers
   function handleTouchStart(event, tileIndex) {
+    // In single-turn mode, don't allow touch interaction with tiles that were previously correct
+    if (mode === "single-turn") {
+      const currentValue = tiles[tileIndex].value;
+      if (
+        tileIndex in tilesShownCorrect &&
+        tilesShownCorrect[tileIndex] === currentValue
+      ) {
+        return;
+      }
+    }
+
     draggedTile = tiles[tileIndex];
     draggedIndex = tileIndex;
     touchStartTime = Date.now();
@@ -310,28 +358,6 @@
     const { row, col } = indexToRowCol(tileIndex);
     let classes = ["tile"];
 
-    // Helper functions
-    const wasCorrectInPrevious = () =>
-      previousGrids.some((prevGrid) => prevGrid.feedback?.[row]?.[col]);
-
-    const isCorrectAtPosition = () => solutionGrid[row]?.[col] === value;
-
-    const wasIncorrectAtPosition = () =>
-      previousGrids.some(
-        (prevGrid) =>
-          prevGrid.grid[row][col] === value &&
-          prevGrid.feedback?.[row] &&
-          !prevGrid.feedback[row][col]
-      );
-
-    const hasDuplicates = () => {
-      const inRow = currentGrid[row].filter((v) => v === value).length > 1;
-      const inCol = currentGrid.some(
-        (r) => r[col] === value && r !== currentGrid[row]
-      );
-      return inRow || inCol;
-    };
-
     // Add drag/interaction classes
     if (isDragging && draggedIndex === tileIndex) {
       classes.push("dragging");
@@ -353,27 +379,40 @@
     if (feedback?.[row]?.[col] !== undefined) {
       if (feedback[row][col]) {
         classes.push(
-          wasCorrectInPrevious() ? "feedback-correct" : "feedback-correct-new"
+          tileIndex in tilesShownCorrect &&
+            tilesShownCorrect[tileIndex] === value
+            ? "feedback-correct"
+            : "feedback-correct-new"
         );
       }
       return classes.join(" ");
     }
 
-    // Skip visual cues if disabled
-    if (!visualCues) return classes.join(" ");
-
-    // Handle previously correct tiles (skip duplicate detection)
-    if (wasCorrectInPrevious() && isCorrectAtPosition()) {
+    // Handle previously correct tiles
+    if (
+      tileIndex in tilesShownCorrect &&
+      tilesShownCorrect[tileIndex] === value
+    ) {
       classes.push("correct-previous");
       return classes.join(" ");
     }
 
-    // Handle other visual cues
-    if (wasIncorrectAtPosition()) {
+    // Handle previously incorrect tiles
+    if (
+      tileIndex in tilesShownWrong &&
+      tilesShownWrong[tileIndex].includes(value)
+    ) {
       classes.push("incorrect-previous");
     }
 
-    if (hasDuplicates()) {
+    // Handle duplicates (checked separately)
+    const inRow = currentGrid[row].filter((v) => v === value).length > 1;
+    const inCol = currentGrid.some(
+      (r) => r[col] === value && r !== currentGrid[row]
+    );
+    const hasDuplicates = inRow || inCol;
+
+    if (hasDuplicates) {
       classes.push("duplicate");
     }
 
@@ -382,6 +421,17 @@
 
   // Handle tile click to increment value
   async function handleTileClick(event, tileIndex) {
+    // In single-turn mode, don't allow clicks on tiles that were previously correct
+    if (mode === "single-turn") {
+      const currentValue = tiles[tileIndex].value;
+      if (
+        tileIndex in tilesShownCorrect &&
+        tilesShownCorrect[tileIndex] === currentValue
+      ) {
+        return; // Don't allow interaction with previously correct tiles
+      }
+    }
+
     // Prevent double handling from touch + click events (short window for synthetic clicks)
     const now = Date.now();
     if (now - lastTouchHandled < 100) {
@@ -760,13 +810,13 @@
       font-weight: 700;
     }
     .tile.incorrect-previous {
-      background: #f1ccc6;
-      color: #64635f;
+      background: #dbd17a;
+      color: #504f4c;
       font-weight: 700;
     }
     .tile.incorrect-previous.duplicate {
-      background: #f1ccc6;
-      color: #cf5910;
+      background: #dbd17a;
+      color: #b64e0e;
       font-weight: 700;
     }
   }

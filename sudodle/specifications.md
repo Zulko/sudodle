@@ -67,3 +67,15 @@ Parameters:
 - visualCues: true/false.
 
 One component `PreviousGrid.svelte` for the previous grid. Has feedback (correct tiles) but is otherwise frozen.
+
+
+# single mode turn
+
+Now let's add a new parameter in the settings called mode (either singe-turn or guesses).
+The mode is set via two buttons at the top of the @Settings.svelte menu.
+The mode appears in the url (and so is also loaded from the url).
+
+When the mode is "guesses", the game is played as it it now.
+The mode is transmitted as a parameter to the currentgrid component. When mode is single-turn, the tiles of current grid that are "correct" cannot be moved nor clicked.
+When mode is single-turn, the button "check" in App.svelte is not shown. Instead, every time the current grid changes, we should check whether it is fully equal to the solution grid, and if it is the case, the game is won.
+When the mode is "single-turn", the "correctly placed" and not correctly placed tiles are shown right away at the beginning of the game.

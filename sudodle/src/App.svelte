@@ -13,35 +13,83 @@
   import PreviousGrid from "./components/PreviousGrid.svelte";
   import LanguageFlags from "./components/LanguageFlags.svelte";
 
-  // State management
-  let settings = {
+  // State management using $state
+  let settings = $state({
     gridSize: 5,
     strictMode: false,
     visualCues: true,
-  };
+    seed: null,
+    mode: "single-turn", // "guesses" or "single-turn"
+    puzzleId: null,
+  });
 
-  let solutionGrid = [];
-  let currentGrid = [];
-  let previousGrids = [];
-  let gameState = "playing"; // 'playing', 'won'
-  let currentTurn = 1;
-  let maxGuesses = 6;
-  let seed = null;
-  let showSettingsModal = false;
-  let isTransitioning = false;
-  let currentGridFeedback = null;
+  let solutionGrid = $state([]);
+  let currentGrid = $state([]);
+  let previousGrids = $state([]);
+  let gameState = $state("playing"); // 'playing', 'won'
+  let currentTurn = $state(1);
+  let maxGuesses = $state(6);
+  let showSettingsModal = $state(false);
+  let isTransitioning = $state(false);
+  let currentGridFeedback = $state(null);
+  let puzzles = $state(null);
 
-  // Reactive statement to check if check button should be disabled
-  $: isCheckDisabled =
+  // Derived values using $derived
+  let isCheckDisabled = $derived(
     isTransitioning ||
-    (settings.strictMode && !checkLatinSquare(currentGrid)) ||
-    maxGuesses - currentTurn <= 0;
+      (settings.strictMode && !checkLatinSquare(currentGrid)) ||
+      maxGuesses - currentTurn <= 0
+  );
 
-  // Reactive statement to check if out of tries
-  $: outOfTries = gameState === "playing" && maxGuesses - currentTurn <= 0;
+  let outOfTries = $derived(
+    gameState === "playing" && maxGuesses - currentTurn <= 0
+  );
 
-  // URL parameter handling
+  // Tile indices for visual cues
+  let tilesShownCorrect = $state({}); // {tileIndex: valueShownCorrectAtThisPosition}
+  let tilesShownWrong = $state({}); // {tileIndex: [tile values shown wrong at this position]}
+
+  $inspect("App - tilesShownCorrect:", tilesShownCorrect);
+  $inspect("App - tilesShownWrong:", tilesShownWrong);
+
+  // Create derived values to ensure reactivity
+  let tilesCorrectForGrid = $derived(tilesShownCorrect);
+  let tilesWrongForGrid = $derived(tilesShownWrong);
+
+  // Component lifecycle
   onMount(() => {
+    parseURLparams();
+    // Wait for i18n to be ready before starting the game
+    const unsubscribe = isLoading.subscribe((loading) => {
+      if (!loading) {
+        startGame();
+        unsubscribe();
+      }
+    });
+  });
+
+  // Handle mode change effects
+  $effect(() => {
+    if (settings.mode === "single-turn") {
+      // Set visual cues to true for single-turn mode
+      settings.visualCues = true;
+
+      // If current grid size is not valid for single-turn, reset to 6
+      if (settings.gridSize > 7) {
+        settings.gridSize = 6;
+      }
+    }
+  });
+
+  // Watch for grid changes in single-turn mode
+  $effect(() => {
+    if (settings.mode === "single-turn" && currentGrid.length > 0) {
+      autoCheckSingleTurn();
+    }
+  });
+
+  // ===== URL/Parameter Management =====
+  function parseURLparams() {
     const urlParams = new URLSearchParams(window.location.search);
 
     if (urlParams.has("gridSize")) {
@@ -54,41 +102,215 @@
       settings.visualCues = urlParams.get("visualCues") === "true";
     }
     if (urlParams.has("seed")) {
-      seed = parseInt(urlParams.get("seed"));
+      settings.seed = parseInt(urlParams.get("seed"));
     }
-
-    // Wait for i18n to be ready before starting the game
-    const unsubscribe = isLoading.subscribe((loading) => {
-      if (!loading) {
-        startGame();
-        unsubscribe();
+    if (urlParams.has("mode")) {
+      const mode = urlParams.get("mode");
+      if (mode === "single-turn" || mode === "guesses") {
+        settings.mode = mode;
       }
-    });
-  });
-
-  // Grid generation functions
-  function generateSolutionGrid() {
-    if (!seed) {
-      seed = Math.floor(Math.random() * 1000000);
     }
-    solutionGrid = uniformRandomLatinSquare(settings.gridSize, seed);
+    if (urlParams.has("puzzleId")) {
+      settings.puzzleId = parseInt(urlParams.get("puzzleId"));
+    }
+  }
+
+  function updateURL() {
+    const params = new URLSearchParams();
+    params.set("gridSize", settings.gridSize.toString());
+    params.set("strictMode", settings.strictMode.toString());
+    params.set("visualCues", settings.visualCues.toString());
+    params.set("mode", settings.mode);
+    if (settings.seed) {
+      params.set("seed", settings.seed.toString());
+    }
+    if (settings.puzzleId) {
+      params.set("puzzleId", settings.puzzleId.toString());
+    }
+
+    const newURL = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, "", newURL);
+  }
+
+  // ===== Grid Generation =====
+  async function generateSolutionGrid() {
+    if (!settings.seed) {
+      settings.seed = Math.floor(Math.random() * 1000000);
+    }
+    solutionGrid = uniformRandomLatinSquare(settings.gridSize, settings.seed);
+  }
+
+  async function pickPuzzle() {
+    if (!puzzles) {
+      puzzles = await loadPuzzles();
+    }
+    const puzzlesForGridSize = puzzles[settings.gridSize];
+
+    if (!settings.puzzleId) {
+      settings.puzzleId = Math.floor(Math.random() * puzzlesForGridSize.length);
+    }
+
+    // Get the puzzle for the current grid size and puzzle ID
+    const puzzle = puzzlesForGridSize[settings.puzzleId];
+    // Initialize correct tiles based on puzzle indices
+
+    console.log({ puzzle });
+    tilesShownCorrect = puzzle.reduce((acc, tileIndex) => {
+      if (tileIndex < settings.gridSize * settings.gridSize) {
+        const row = Math.floor(tileIndex / settings.gridSize);
+        const col = tileIndex % settings.gridSize;
+        acc[tileIndex] = currentGrid[row][col];
+      }
+      return acc;
+    }, {});
+
+    console.log({ tilesShownCorrect });
+
+    // Initialize objects to track incorrect tiles
+    const wrongTiles = {};
+
+    // The puzzle contains tile indices that should be marked as correct
+    // Mark all OTHER positions (not in puzzle) as wrong
+    for (
+      let tileIndex = 0;
+      tileIndex < settings.gridSize * settings.gridSize;
+      tileIndex++
+    ) {
+      if (!puzzle.includes(tileIndex)) {
+        const row = Math.floor(tileIndex / settings.gridSize);
+        const col = tileIndex % settings.gridSize;
+        const currentValue = currentGrid[row][col];
+        wrongTiles[tileIndex] = [currentValue];
+      }
+    }
+
+    // Update the tile tracking objects
+    tilesShownWrong = wrongTiles;
+    console.log({ tilesShownWrong });
+  }
+
+  async function loadPuzzles() {
+    return fetch("compacted_puzzles.txt")
+      .then((response) => response.text())
+      .then((text) => {
+        const puzzles = {};
+        const lines = text.trim().split("\n");
+
+        // Function to convert character to tile index
+        function charToIndex(char) {
+          if (char >= "0" && char <= "9") {
+            return parseInt(char);
+          } else if (char >= "A" && char <= "Z") {
+            return char.charCodeAt(0) - "A".charCodeAt(0) + 10;
+          } else if (char >= "a" && char <= "z") {
+            return char.charCodeAt(0) - "a".charCodeAt(0) + 36;
+          }
+          return 0; // fallback
+        }
+
+        lines.forEach((line) => {
+          if (line.length > 0) {
+            const gridSize = parseInt(line[0]);
+            const tileIndices = [];
+
+            // Parse each character after the first as a tile index
+            for (let i = 1; i < line.length; i++) {
+              tileIndices.push(charToIndex(line[i]));
+            }
+
+            // Initialize array for this grid size if it doesn't exist
+            if (!puzzles[gridSize]) {
+              puzzles[gridSize] = [];
+            }
+
+            puzzles[gridSize].push(tileIndices);
+          }
+        });
+
+        return puzzles;
+      });
   }
 
   function initializeCurrentGrid() {
     currentGrid = cyclicLatinSquare(settings.gridSize);
   }
 
-  // Game flow functions
-  function startGame() {
+  // ===== Visual Cues Update =====
+  function updateVisualCues() {
+    if (!settings.visualCues || currentGrid.length === 0) {
+      tilesShownCorrect = {};
+      tilesShownWrong = {};
+      return;
+    }
+
+    const correctTiles = {};
+    const wrongTiles = {};
+
+    for (let row = 0; row < settings.gridSize; row++) {
+      for (let col = 0; col < settings.gridSize; col++) {
+        const index = row * settings.gridSize + col;
+        const currentValue = currentGrid[row]?.[col];
+
+        // Find what value was previously shown as correct at this position
+        let previouslyCorrectValue = null;
+        for (const prevGrid of previousGrids) {
+          if (prevGrid.feedback?.[row]?.[col]) {
+            previouslyCorrectValue = prevGrid.grid[row][col];
+            break; // Once we find a correct value, we can stop
+          }
+        }
+
+        // If current value matches a previously correct value at this position
+        if (
+          previouslyCorrectValue !== null &&
+          currentValue === previouslyCorrectValue
+        ) {
+          correctTiles[index] = currentValue;
+        }
+
+        // Collect all values that were incorrect at this position in previous attempts
+        const incorrectValues = [];
+        previousGrids.forEach((prevGrid) => {
+          if (
+            prevGrid.feedback?.[row] &&
+            !prevGrid.feedback[row][col] &&
+            !incorrectValues.includes(prevGrid.grid[row][col])
+          ) {
+            incorrectValues.push(prevGrid.grid[row][col]);
+          }
+        });
+
+        // Only show as wrong if current value was previously shown as wrong at this position
+        if (incorrectValues.includes(currentValue)) {
+          wrongTiles[index] = incorrectValues;
+        }
+      }
+    }
+    console.log("HEEERE");
+    tilesShownCorrect = correctTiles;
+    tilesShownWrong = wrongTiles;
+  }
+
+  // ===== Game Flow/Logic =====
+  async function startGame() {
     gameState = "playing";
-    generateSolutionGrid();
     initializeCurrentGrid();
+    console.log(currentGrid);
     previousGrids = [];
-    currentTurn = 1;
+
+    if (settings.mode === "single-turn") {
+      await pickPuzzle();
+      console.log({ tilesShownCorrect, tilesShownWrong });
+    } else {
+      await generateSolutionGrid();
+      currentTurn = 1;
+      checkGridGuess();
+      updateVisualCues();
+    }
     updateURL();
   }
 
-  function checkGrid() {
+  function checkGridGuess() {
     const feedback = [];
     for (let i = 0; i < settings.gridSize; i++) {
       const row = [];
@@ -156,25 +378,89 @@
         currentGridFeedback = null;
         isTransitioning = false;
 
+        // Update visual cues for the new turn
+        updateVisualCues();
+
         // Scroll to bottom to keep current grid in view
+        if (previousGrids.length > 1) {
+          setTimeout(() => {
+            window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: "instant",
+            });
+          }, 2); // Small delay to ensure DOM has updated
+        }
+      }, 500);
+    }
+
+    // Update visual cues at the end of checkGridGuess
+    updateVisualCues();
+  }
+
+  function autoCheckSingleTurn() {
+    if (settings.mode !== "single-turn") return;
+
+    // Only check for completion if there are wrong tiles to validate against
+    if (Object.keys(tilesShownWrong).length === 0) return;
+
+    // Check if current grid is a valid Latin square
+    const isValidLatinSquare = checkLatinSquare(currentGrid);
+
+    if (!isValidLatinSquare) return;
+
+    // Check that no tile values correspond to tilesShownWrong
+    const hasWrongTiles = currentGrid.some((row, i) =>
+      row.some((cell, j) => {
+        const tileIndex = i * settings.gridSize + j;
+        return (
+          tilesShownWrong[tileIndex] &&
+          tilesShownWrong[tileIndex].includes(cell)
+        );
+      })
+    );
+
+    const isComplete = !hasWrongTiles;
+
+    if (isComplete) {
+      // Game won in single-turn mode
+      const feedback = currentGrid.map((row) => row.map(() => true));
+
+      currentGridFeedback = feedback;
+      isTransitioning = true;
+
+      setTimeout(() => {
+        previousGrids = [
+          ...previousGrids,
+          {
+            grid: currentGrid.map((row) => [...row]),
+            feedback: feedback,
+            turn: currentTurn,
+          },
+        ];
+        gameState = "won";
+        currentGridFeedback = null;
+        isTransitioning = false;
+
         setTimeout(() => {
           window.scrollTo({
             top: document.documentElement.scrollHeight,
-            behavior: "instant",
+            behavior: "smooth",
           });
-        }, 2); // Small delay to ensure DOM has updated
+        }, 100);
       }, 1000);
     }
   }
 
   function newGame() {
-    seed = null;
+    settings.seed = null;
+    settings.puzzleId = null;
     previousGrids = [];
     currentTurn = 1;
     showSettingsModal = false;
     startGame();
   }
 
+  // ===== UI/Modal Management =====
   function showNewGameModal() {
     showSettingsModal = true;
   }
@@ -183,24 +469,14 @@
     showSettingsModal = false;
   }
 
-  function updateURL() {
-    const params = new URLSearchParams();
-    params.set("gridSize", settings.gridSize.toString());
-    params.set("strictMode", settings.strictMode.toString());
-    params.set("visualCues", settings.visualCues.toString());
-    if (seed) {
-      params.set("seed", seed.toString());
-    }
-
-    const newURL = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState({}, "", newURL);
-  }
-
+  // ===== Sharing/External =====
   function shareGame() {
     const gameURL = window.location.href;
     let title = $_("shareTitle");
     if (gameState === "won") {
-      title = $_("shareWinTitle", { values: { count: previousGrids.length } });
+      title = $_("shareWinTitle", {
+        values: { count: previousGrids.length },
+      });
     }
     if (navigator.share) {
       navigator.share({
@@ -228,45 +504,51 @@
 
       <div class="rules">
         <p>
-          {$_("rules")}
+          {settings.mode === "guesses"
+            ? $_("rulesGuesses")
+            : $_("rulesSingleTurn")}
         </p>
       </div>
 
       <section class="game">
         <!-- Previous Grids -->
-        {#each previousGrids as prevGrid (prevGrid.turn)}
-          <div class="previous-grid">
-            <PreviousGrid previousGrid={prevGrid} />
-          </div>
-        {/each}
+        {#if settings.mode === "guesses" && previousGrids.length > 1}
+          {#each previousGrids as prevGrid (prevGrid.turn)}
+            <div class="previous-grid">
+              <PreviousGrid previousGrid={prevGrid} />
+            </div>
+          {/each}
+        {/if}
 
         <!-- Current/Final Grid -->
         {#if gameState === "playing"}
           <div class="current-grid">
             <CurrentGrid
               bind:currentGrid
-              visualCues={settings.visualCues}
-              {previousGrids}
-              {solutionGrid}
+              tilesShownCorrect={tilesCorrectForGrid}
+              tilesShownWrong={tilesWrongForGrid}
               feedback={currentGridFeedback}
+              mode={settings.mode}
             />
-            <button
-              onclick={checkGrid}
-              class="primary-btn check-btn {isTransitioning
-                ? 'transitioning'
-                : ''}"
-              disabled={isCheckDisabled}
-            >
-              {isTransitioning
-                ? $_("checking")
-                : settings.strictMode && !checkLatinSquare(currentGrid)
-                  ? $_("cannotCheck")
-                  : maxGuesses - currentTurn <= 0
-                    ? $_("outOfGuesses")
-                    : $_("checkWithGuesses", {
-                        values: { count: maxGuesses - currentTurn },
-                      })}
-            </button>
+            {#if settings.mode === "guesses"}
+              <button
+                onclick={checkGridGuess}
+                class="primary-btn check-btn {isTransitioning
+                  ? 'transitioning'
+                  : ''}"
+                disabled={isCheckDisabled}
+              >
+                {isTransitioning
+                  ? $_("checking")
+                  : settings.strictMode && !checkLatinSquare(currentGrid)
+                    ? $_("cannotCheck")
+                    : maxGuesses - currentTurn <= 0
+                      ? $_("outOfGuesses")
+                      : $_("checkWithGuesses", {
+                          values: { count: maxGuesses - currentTurn },
+                        })}
+              </button>
+            {/if}
           </div>
         {/if}
 
@@ -298,7 +580,14 @@
   </main>
 
   {#if showSettingsModal}
-    <Settings {settings} onStartGame={newGame} onCancel={hideSettingsModal} />
+    <Settings
+      bind:mode={settings.mode}
+      bind:gridSize={settings.gridSize}
+      bind:strictMode={settings.strictMode}
+      bind:visualCues={settings.visualCues}
+      onStartGame={newGame}
+      onCancel={hideSettingsModal}
+    />
   {/if}
 {/if}
 
