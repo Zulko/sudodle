@@ -1,6 +1,6 @@
 {
   "title": "Sudodle",
-  "rulesGuesses": "Devinez la grille cachée, sachant que chaque chiffre apparaît une fois sur chaque ligne et colonne. Cliquez sur \"Vérifier\" pour révéler les cases correctement placées.",
+  "rulesGuesses": "Les cases vertes sont bien placées, les jaunes non: replacez-les de sorte que chaque chiffre apparaîsse une fois sur chaque ligne et colonne.",
   "rulesSingleTurn": "Les cases vertes sont bien placées, les jaunes non: replacez-les de sorte que chaque chiffre apparaîsse une fois sur chaque ligne et colonne.",
   "checking": "Vérification...",
   "check": "Vérifier",
