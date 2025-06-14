@@ -36,5 +36,7 @@
   "singleTurn": "En un coup",
   "difficultyNormal": "Normal",
   "difficultyHard": "Difficile",
-  "difficultyExpert": "Expert"
+  "difficultyExpert": "Expert",
+  "installApp": "Installer Sudodle comme une app",
+  "iosInstallInstructions": "Pour installer Sudodle sur iOS :\n1. Appuyez sur l'icône de partage en bas\n2. Sélectionnez 'Sur l'écran d'accueil'\n3. Appuyez sur 'Ajouter'"
 } 

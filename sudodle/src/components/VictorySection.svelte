@@ -1,5 +1,7 @@
-<script>
+<script lang="ts">
   import { _, locale } from "svelte-i18n";
+  import PWAInstallButton from "./PWAInstallButton.svelte";
+
   let {
     onNewGame,
     onShareGame,
@@ -39,7 +41,6 @@
     <button onclick={onShareGame} class="new-game-btn">
       {$_("shareGameAction")}
     </button>
-
     <p class="github-link">
       <a
         href="https://github.com/Zulko/sudodle"
@@ -50,6 +51,7 @@
         <img src="/github-icon.svg" alt="GitHub" class="github-icon" />
       </a>
     </p>
+    <PWAInstallButton />
   </div>
 </div>
 

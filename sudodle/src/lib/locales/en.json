@@ -36,5 +36,7 @@
   "singleTurn": "Single turn",
   "difficultyNormal": "Normal",
   "difficultyHard": "Hard",
-  "difficultyExpert": "Expert"
+  "difficultyExpert": "Expert",
+  "installApp": "Install Sudodle as an app",
+  "iosInstallInstructions": "To install Sudodle on iOS:\n1. Tap the share icon at the bottom\n2. Select 'Add to Home Screen'\n3. Tap 'Add'"
 } 
