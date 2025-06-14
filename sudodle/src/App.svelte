@@ -672,10 +672,6 @@
     width: 100%;
   }
 
-  .check-btn {
-    margin-top: 1rem;
-  }
-
   .primary-btn {
     background: #3498db;
     color: white;
