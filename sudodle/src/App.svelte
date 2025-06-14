@@ -437,14 +437,11 @@
       isTransitioning = true;
 
       setTimeout(() => {
-        previousGrids = [
-          ...previousGrids,
-          {
-            grid: currentGrid.map((row) => [...row]),
-            feedback: feedback,
-            turn: currentTurn,
-          },
-        ];
+        previousGrids.push({
+          grid: currentGrid.map((row) => [...row]),
+          feedback: feedback,
+          turn: currentTurn,
+        });
         gameState = "won";
         currentGridFeedback = null;
         isTransitioning = false;
@@ -521,7 +518,7 @@
 
       <section class="game">
         <!-- Previous Grids -->
-        {#if settings.mode === "guesses" && previousGrids.length > 1}
+        {#if previousGrids.length > 1 || gameState === "won"}
           {#each previousGrids as prevGrid (prevGrid.turn)}
             <div class="previous-grid">
               <PreviousGrid previousGrid={prevGrid} />
