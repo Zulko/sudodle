@@ -21,6 +21,7 @@
     seed: null,
     mode: "single-turn", // "guesses" or "single-turn"
     puzzleId: null,
+    difficulty: "normal", // "normal", "hard", "expert"
   });
 
   let solutionGrid = $state([]);
@@ -57,8 +58,8 @@
   );
 
   // Component lifecycle
-  onMount(() => {
-    parseURLparams();
+  onMount(async () => {
+    await parseURLparams();
     // Wait for i18n to be ready before starting the game
     const unsubscribe = isLoading.subscribe((loading) => {
       if (!loading) {
@@ -89,7 +90,7 @@
   });
 
   // ===== URL/Parameter Management =====
-  function parseURLparams() {
+  async function parseURLparams() {
     const urlParams = new URLSearchParams(window.location.search);
 
     if (urlParams.has("gridSize")) {
@@ -111,23 +112,34 @@
       }
     }
     if (urlParams.has("puzzleId")) {
-      settings.puzzleId = parseInt(urlParams.get("puzzleId"));
+      settings.puzzleId = urlParams.get("puzzleId");
+      settings.gridSize = parseInt(settings.puzzleId[0]);
+      settings.mode = "single-turn";
+      puzzles = await loadPuzzles();
+      for (const difficulty of ["normal", "hard", "expert"]) {
+        if (
+          puzzles[settings.gridSize][difficulty]?.includes(settings.puzzleId)
+        ) {
+          settings.difficulty = difficulty;
+          break;
+        }
+      }
     }
   }
 
   function updateURL() {
     const params = new URLSearchParams();
-    params.set("gridSize", settings.gridSize.toString());
-    params.set("strictMode", settings.strictMode.toString());
-    params.set("visualCues", settings.visualCues.toString());
-    params.set("mode", settings.mode);
-    if (settings.seed) {
-      params.set("seed", settings.seed.toString());
-    }
     if (settings.puzzleId) {
       params.set("puzzleId", settings.puzzleId.toString());
+    } else {
+      params.set("gridSize", settings.gridSize.toString());
+      params.set("strictMode", settings.strictMode.toString());
+      params.set("visualCues", settings.visualCues.toString());
+      params.set("mode", settings.mode);
+      if (settings.seed) {
+        params.set("seed", settings.seed.toString());
+      }
     }
-
     const newURL = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState({}, "", newURL);
   }
@@ -144,16 +156,44 @@
     if (!puzzles) {
       puzzles = await loadPuzzles();
     }
-    const puzzlesForGridSize = puzzles[settings.gridSize];
+    const puzzlesForGridSizeAndDifficulty =
+      puzzles[settings.gridSize]?.[settings.difficulty];
 
-    if (!settings.puzzleId) {
-      settings.puzzleId = Math.floor(Math.random() * puzzlesForGridSize.length);
+    if (
+      !puzzlesForGridSizeAndDifficulty ||
+      puzzlesForGridSizeAndDifficulty.length === 0
+    ) {
+      console.error(
+        `No puzzles found for grid size ${settings.gridSize} and difficulty ${settings.difficulty}`
+      );
+      return;
+    }
+    const index = Math.floor(
+      Math.random() * puzzlesForGridSizeAndDifficulty.length
+    );
+    settings.puzzleId = puzzlesForGridSizeAndDifficulty[index];
+  }
+
+  function initializeGridFromPuzzleId() {
+    // Function to convert character to tile index
+    function charToIndex(char) {
+      if (char >= "0" && char <= "9") {
+        return parseInt(char);
+      } else if (char >= "A" && char <= "Z") {
+        return char.charCodeAt(0) - "A".charCodeAt(0) + 10;
+      } else if (char >= "a" && char <= "z") {
+        return char.charCodeAt(0) - "a".charCodeAt(0) + 36;
+      }
+      return 0; // fallback
     }
 
-    // Get the puzzle for the current grid size and puzzle ID
-    const puzzle = puzzlesForGridSize[settings.puzzleId];
-    // Initialize correct tiles based on puzzle indices
+    // Decode the puzzle ID to get tile indices
+    const puzzle = [];
+    for (let i = 1; i < settings.puzzleId.length; i++) {
+      puzzle.push(charToIndex(settings.puzzleId[i]));
+    }
 
+    // Initialize correct tiles based on puzzle indices
     tilesShownCorrect = puzzle.reduce((acc, tileIndex) => {
       if (tileIndex < settings.gridSize * settings.gridSize) {
         const row = Math.floor(tileIndex / settings.gridSize);
@@ -186,40 +226,30 @@
   }
 
   async function loadPuzzles() {
-    return fetch("compacted_puzzles.txt")
+    return fetch("puzzles.csv")
       .then((response) => response.text())
       .then((text) => {
         const puzzles = {};
         const lines = text.trim().split("\n");
 
-        // Function to convert character to tile index
-        function charToIndex(char) {
-          if (char >= "0" && char <= "9") {
-            return parseInt(char);
-          } else if (char >= "A" && char <= "Z") {
-            return char.charCodeAt(0) - "A".charCodeAt(0) + 10;
-          } else if (char >= "a" && char <= "z") {
-            return char.charCodeAt(0) - "a".charCodeAt(0) + 36;
-          }
-          return 0; // fallback
-        }
-
         lines.forEach((line) => {
           if (line.length > 0) {
-            const gridSize = parseInt(line[0]);
-            const tileIndices = [];
+            const parts = line.split(",");
+            if (parts.length >= 2) {
+              const compactedPuzzle = parts[0];
+              const difficulty = parts[1];
+              const gridSize = parseInt(compactedPuzzle[0]);
 
-            // Parse each character after the first as a tile index
-            for (let i = 1; i < line.length; i++) {
-              tileIndices.push(charToIndex(line[i]));
+              // Initialize nested structure for this grid size and difficulty if it doesn't exist
+              if (!puzzles[gridSize]) {
+                puzzles[gridSize] = {};
+              }
+              if (!puzzles[gridSize][difficulty]) {
+                puzzles[gridSize][difficulty] = [];
+              }
+
+              puzzles[gridSize][difficulty].push(compactedPuzzle);
             }
-
-            // Initialize array for this grid size if it doesn't exist
-            if (!puzzles[gridSize]) {
-              puzzles[gridSize] = [];
-            }
-
-            puzzles[gridSize].push(tileIndices);
           }
         });
 
@@ -289,7 +319,10 @@
     previousGrids = [];
 
     if (settings.mode === "single-turn") {
-      await pickPuzzle();
+      if (!settings.puzzleId) {
+        await pickPuzzle();
+      }
+      initializeGridFromPuzzleId();
     } else {
       await generateSolutionGrid();
       currentTurn = 1;
@@ -577,6 +610,7 @@
       bind:gridSize={settings.gridSize}
       bind:strictMode={settings.strictMode}
       bind:visualCues={settings.visualCues}
+      bind:difficulty={settings.difficulty}
       onStartGame={newGame}
       onCancel={hideSettingsModal}
     />

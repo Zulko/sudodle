@@ -29,5 +29,8 @@
   "ordinalRd": "rd",
   "ordinalTh": "th",
   "multipleGuesses": "Multiple guesses",
-  "singleTurn": "Single turn"
+  "singleTurn": "Single turn",
+  "difficultyNormal": "Normal",
+  "difficultyHard": "Hard",
+  "difficultyExpert": "Expert"
 } 

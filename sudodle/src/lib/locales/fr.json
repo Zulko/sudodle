@@ -29,5 +29,8 @@
   "ordinalRd": "ème",
   "ordinalTh": "ème",
   "multipleGuesses": "Plusieurs coups",
-  "singleTurn": "En un coup"
+  "singleTurn": "En un coup",
+  "difficultyNormal": "Normal",
+  "difficultyHard": "Difficile",
+  "difficultyExpert": "Expert"
 } 

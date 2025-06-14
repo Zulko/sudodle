@@ -6,6 +6,7 @@
     gridSize = $bindable(),
     strictMode = $bindable(),
     visualCues = $bindable(),
+    difficulty = $bindable(),
     onStartGame,
     onCancel,
   } = $props();
@@ -24,6 +25,13 @@
   function handleStartGame() {
     onStartGame();
   }
+
+  // Reset difficulty to normal if gridSize is 4 and current difficulty is not normal
+  $effect(() => {
+    if (gridSize === 4 && difficulty !== "normal") {
+      difficulty = "normal";
+    }
+  });
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -86,6 +94,33 @@
               {/each}
             </div>
           </div>
+          {#if mode === "single-turn"}
+            <div class="setting-row">
+              <div class="difficulty-group">
+                {#each ["normal", "hard", "expert"] as difficultyLevel}
+                  <label
+                    class="difficulty-item {gridSize === 4 &&
+                    difficultyLevel !== 'normal'
+                      ? 'disabled'
+                      : ''}"
+                  >
+                    <input
+                      type="radio"
+                      bind:group={difficulty}
+                      value={difficultyLevel}
+                      disabled={gridSize === 4 && difficultyLevel !== "normal"}
+                      aria-label="Difficulty {difficultyLevel}"
+                    />
+                    <span
+                      >{$_(
+                        `difficulty${difficultyLevel.charAt(0).toUpperCase() + difficultyLevel.slice(1)}`
+                      )}</span
+                    >
+                  </label>
+                {/each}
+              </div>
+            </div>
+          {/if}
           {#if mode !== "single-turn"}
             <div class="setting-row">
               <div class="switch-setting">
@@ -339,6 +374,70 @@
     z-index: 1;
   }
 
+  .difficulty-group {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+
+  .difficulty-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.6rem;
+    border: 2px solid #ddd;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    font-weight: 500;
+    position: relative;
+  }
+
+  .difficulty-item:hover {
+    border-color: #3498db;
+    background: #f8f9fa;
+  }
+
+  .difficulty-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .difficulty-item input[type="radio"]:checked + span {
+    color: white;
+  }
+
+  .difficulty-item:has(input[type="radio"]:checked),
+  .difficulty-item input[type="radio"]:checked + span {
+    background: #3498db;
+    border-color: #3498db;
+    color: white;
+  }
+
+  .difficulty-item input[type="radio"]:checked {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .difficulty-item span {
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .difficulty-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .difficulty-item.disabled:hover {
+    border-color: #ddd;
+    background: transparent;
+  }
+
   .switch-setting {
     width: 100%;
     display: flex;
@@ -471,6 +570,27 @@
     .radio-item:hover {
       border-color: #3498db;
       background: #333;
+    }
+
+    .difficulty-item {
+      border: 2px solid #555;
+      background: #2a2a2a;
+      color: #ffffff;
+    }
+
+    .difficulty-item:hover {
+      border-color: #3498db;
+      background: #333;
+    }
+
+    .difficulty-item.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .difficulty-item.disabled:hover {
+      border-color: #555;
+      background: #2a2a2a;
     }
 
     .switch-text {
