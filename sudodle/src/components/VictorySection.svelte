@@ -1,6 +1,12 @@
 <script>
   import { _, locale } from "svelte-i18n";
-  let { onNewGame, onShareGame, guessCount } = $props();
+  let {
+    onNewGame,
+    onShareGame,
+    guessCount,
+    elapsedTime = "",
+    gameMode = "guesses",
+  } = $props();
 
   // Helper function for pluralization based on language
   let plural = $derived(
@@ -18,7 +24,13 @@
   <div class="celebration-icon">🎉</div>
   <h2>{$_("wellDone")}</h2>
   <p>
-    {$_("solvedInGuesses", { values: { count: guessCount, plural } })}
+    {#if gameMode === "single-turn"}
+      {$_("solvedInTime", { values: { time: elapsedTime } })}
+    {:else}
+      {$_("solvedInTimeAndGuesses", {
+        values: { time: elapsedTime, count: guessCount, plural },
+      })}
+    {/if}
   </p>
   <div class="victory-actions">
     <button onclick={onNewGame} class="share-btn">

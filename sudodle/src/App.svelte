@@ -33,6 +33,8 @@
   let isTransitioning = $state(false);
   let currentGridFeedback = $state(null);
   let puzzles = $state(null);
+  let tStart = $state(null);
+  let gameEndTime = $state(null);
 
   // Tile indices for visual cues
   let tilesShownCorrect = $state({}); // {tileIndex: valueShownCorrectAtThisPosition}
@@ -55,6 +57,18 @@
   let outOfTries = $derived(
     gameState === "playing" && maxGuesses - currentTurn <= 0
   );
+
+  // Derived timing values
+  let elapsedTimeFormatted = $derived(() => {
+    if (!tStart || !gameEndTime) return "";
+
+    const elapsedMs = gameEndTime - tStart;
+    const totalSeconds = Math.floor(elapsedMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${minutes}m:${seconds.toString().padStart(2, "0")}s`;
+  });
 
   // Component lifecycle
   onMount(async () => {
@@ -301,6 +315,8 @@
   // ===== Game Flow/Logic =====
   async function startGame() {
     gameState = "playing";
+    tStart = Date.now();
+    gameEndTime = null;
     currentGrid = cyclicLatinSquare(settings.gridSize);
     previousGrids = [];
 
@@ -335,6 +351,7 @@
       // Immediately show feedback on current grid
       currentGridFeedback = feedback;
       isTransitioning = true;
+      gameEndTime = Date.now();
 
       // After 1 second, move winning grid to previous grids and show victory
       setTimeout(() => {
@@ -435,6 +452,7 @@
 
       currentGridFeedback = feedback;
       isTransitioning = true;
+      gameEndTime = Date.now();
 
       setTimeout(() => {
         previousGrids.push({
@@ -480,9 +498,16 @@
     const gameURL = window.location.href;
     let title = $_("shareTitle");
     if (gameState === "won") {
-      title = $_("shareWinTitle", {
-        values: { count: previousGrids.length },
-      });
+      const timeString = elapsedTimeFormatted();
+      if (settings.mode === "single-turn") {
+        title = $_("shareWinTitleSingleTurn", {
+          values: { time: timeString },
+        });
+      } else {
+        title = $_("shareWinTitleGuesses", {
+          values: { time: timeString, count: previousGrids.length },
+        });
+      }
     }
     if (navigator.share) {
       navigator.share({
@@ -566,6 +591,8 @@
             onNewGame={showNewGameModal}
             onShareGame={shareGame}
             guessCount={previousGrids.length}
+            elapsedTime={elapsedTimeFormatted()}
+            gameMode={settings.mode}
           />
         {/if}
 
