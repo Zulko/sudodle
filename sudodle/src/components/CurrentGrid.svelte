@@ -3,88 +3,146 @@
   import { flip } from "svelte/animate";
   import { _ } from "svelte-i18n";
 
-  export let currentGrid;
-  export let tilesShownCorrect = {}; // {tileIndex: valueShownCorrectAtThisPosition}
-  export let tilesShownWrong = {}; // {tileIndex: [tile values shown wrong at this position]}
-  export let feedback = null;
-  export let mode = "guesses"; // "guesses" or "single-turn"
+  // Props using Svelte 5 runes
+  let {
+    currentGrid = $bindable(),
+    tilesShownCorrect = {},
+    tilesShownWrong = {},
+    feedback = null,
+    mode = "guesses",
+    isTransitioning = false,
+  } = $props();
 
-  let draggedTile = null;
-  let draggedIndex = null;
-  let hoveredIndex = null;
-  let recentlySwapped = [];
-  let touchStartPosition = null;
-  let isDragging = false;
-  let currentTouchPosition = null;
-  let clickedTiles = []; // Track recently clicked tiles for pulse effect
-  let dragStartTime = null; // Track when drag started to distinguish from clicks
-  let touchStartTime = null; // Track when touch started
-  let hasTouchMoved = false; // Track if touch has moved significantly
-  let lastTouchHandled = 0; // Prevent double handling of touch + click
+  // State variables using Svelte 5 runes
+  let draggedTile = $state(null);
+  let draggedIndex = $state(null);
+  let hoveredIndex = $state(null);
+  let recentlySwapped = $state([]);
+  let touchStartPosition = $state(null);
+  let isDragging = $state(false);
+  let currentTouchPosition = $state(null);
+  let clickedTiles = $state([]); // Track recently clicked tiles for pulse effect
+  let dragStartTime = $state(null); // Track when drag started to distinguish from clicks
+  let touchStartTime = $state(null); // Track when touch started
+  let hasTouchMoved = $state(false); // Track if touch has moved significantly
+  let lastTouchHandled = $state(0); // Prevent double handling of touch + click
+
+  // Undo functionality
+  let pastCurrentGridsForUndo = $state([]);
 
   // Create stable tiles with unique keys based on content
-  let tiles = [];
-  let lastGameId = null;
-  let currentGameId = null;
+  let tiles = $state([]);
+  let lastGameId = $state(null);
+  let gameIdCounter = $state(0);
 
-  // Get the grid size
-  $: gridSize = currentGrid.length;
+  // Get the grid size - derived value
+  const gridSize = $derived(currentGrid.length);
 
   // Calculate border radius based on grid size - larger grids get smaller radius
-  $: borderRadius = (() => {
-    const radiusMap = {
-      4: 10,
-      5: 8,
-      6: 7,
-      7: 6,
-      8: 5,
-      9: 4,
-    };
-    return radiusMap[gridSize] || Math.max(4, 14 - gridSize); // fallback formula
-  })();
+  const borderRadius = $derived(
+    (() => {
+      const radiusMap = {
+        4: 10,
+        5: 8,
+        6: 7,
+        7: 6,
+        8: 5,
+        9: 4,
+      };
+      return radiusMap[gridSize] || Math.max(4, 14 - gridSize); // fallback formula
+    })()
+  );
 
-  // Create a game identifier based on current grid - when this changes, it's a new game
-  // Generate new ID when grid size changes, when initializing, or when grid content changes significantly
-  $: {
-    if (currentGrid.length > 0) {
-      // Create a content hash to detect when grid content changes (new game)
-      const gridContentHash = currentGrid.flat().join(",");
-      const expectedInitialContent = Array.from({ length: gridSize }, (_, i) =>
-        Array.from({ length: gridSize }, (_, j) => ((i + j) % gridSize) + 1)
-      )
-        .flat()
-        .join(",");
+  // Calculate dragging tile size based on grid size
+  const draggingTileSize = $derived(
+    (() => {
+      const sizes = {
+        4: 80,
+        5: 70,
+        6: 58,
+        7: 50,
+        8: 44,
+        9: 39,
+      };
+      return sizes[gridSize] || 60; // fallback to 60px
+    })()
+  );
 
-      // Generate new ID if we don't have one, grid size changed, or we're back to initial cyclic state
-      if (
-        !currentGameId ||
-        currentGameId.split("-")[0] !== gridSize.toString() ||
-        gridContentHash === expectedInitialContent
-      ) {
-        currentGameId = `${gridSize}-${Date.now()}`;
-      }
-    } else {
-      currentGameId = null;
+  // Mobile sizes
+  const mobileDraggingTileSize = $derived(
+    (() => {
+      const mobileSizes = {
+        4: 65,
+        5: 55,
+        6: 48,
+        7: 42,
+        8: 37,
+        9: 33,
+      };
+      return mobileSizes[gridSize] || 50; // fallback to 50px
+    })()
+  );
+
+  // Derived value for undo button state
+  const canUndo = $derived(pastCurrentGridsForUndo.length > 1);
+
+  // Create a game identifier based on current grid - derived from grid state
+  const currentGameId = $derived(() => {
+    if (currentGrid.length === 0) return null;
+
+    // Create a content hash to detect when grid content changes (new game)
+    const gridContentHash = currentGrid.flat().join(",");
+    const expectedInitialContent = Array.from({ length: gridSize }, (_, i) =>
+      Array.from({ length: gridSize }, (_, j) => ((i + j) % gridSize) + 1)
+    )
+      .flat()
+      .join(",");
+
+    // If we're at initial state, create new game ID
+    if (gridContentHash === expectedInitialContent) {
+      return `${gridSize}-${Date.now()}-${gameIdCounter}`;
     }
+
+    // Otherwise return consistent ID for this grid size
+    return `${gridSize}-game`;
+  });
+
+  // Check if current grid content matches what's in tiles array
+  function tilesMatchCurrentGrid() {
+    if (tiles.length !== gridSize * gridSize) return false;
+
+    for (let row = 0; row < currentGrid.length; row++) {
+      for (let col = 0; col < currentGrid[row].length; col++) {
+        const index = row * gridSize + col;
+        if (tiles[index]?.value !== currentGrid[row][col]) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   // Initialize tiles with stable keys based on value and initial position
-  $: if (
-    currentGrid.length > 0 &&
-    (currentGameId !== lastGameId || tiles.length !== gridSize * gridSize)
-  ) {
-    tiles = [];
-    for (let row = 0; row < currentGrid.length; row++) {
-      for (let col = 0; col < currentGrid[row].length; col++) {
-        tiles.push({
-          // Stable key based on value and original position - this never changes!
-          id: `tile-${currentGrid[row][col]}-at-${row}-${col}-${currentGameId}`,
-          value: currentGrid[row][col],
-        });
+  $effect.pre(() => {
+    if (
+      currentGrid.length > 0 &&
+      (currentGameId !== lastGameId ||
+        tiles.length !== gridSize * gridSize ||
+        !tilesMatchCurrentGrid())
+    ) {
+      tiles = [];
+      for (let row = 0; row < currentGrid.length; row++) {
+        for (let col = 0; col < currentGrid[row].length; col++) {
+          tiles.push({
+            // Stable key based on value and original position - this never changes!
+            id: `tile-${currentGrid[row][col]}-at-${row}-${col}-${currentGameId}`,
+            value: currentGrid[row][col],
+          });
+        }
       }
+      lastGameId = currentGameId;
     }
-    lastGameId = currentGameId;
-  }
+  });
 
   // Helper functions to convert between index and row/col
   function indexToRowCol(index) {
@@ -92,6 +150,33 @@
       row: Math.floor(index / gridSize),
       col: index % gridSize,
     };
+  }
+
+  // Helper function to compare grids
+  function gridsEqual(grid1, grid2) {
+    if (!grid1 || !grid2 || grid1.length !== grid2.length) return false;
+    for (let i = 0; i < grid1.length; i++) {
+      if (!grid1[i] || !grid2[i] || grid1[i].length !== grid2[i].length)
+        return false;
+      for (let j = 0; j < grid1[i].length; j++) {
+        if (grid1[i][j] !== grid2[i][j]) return false;
+      }
+    }
+    return true;
+  }
+
+  // Helper function to compare tiles arrays
+  function tilesEqual(tiles1, tiles2) {
+    if (!tiles1 || !tiles2 || tiles1.length !== tiles2.length) return false;
+    for (let i = 0; i < tiles1.length; i++) {
+      if (
+        tiles1[i].id !== tiles2[i].id ||
+        tiles1[i].value !== tiles2[i].value
+      ) {
+        return false;
+      }
+    }
+    return true;
   }
 
   // Update currentGrid from tiles array order
@@ -106,31 +191,54 @@
     currentGrid = newGrid;
   }
 
-  // Calculate dragging tile size based on grid size
-  $: draggingTileSize = (() => {
-    const sizes = {
-      4: 80,
-      5: 70,
-      6: 58,
-      7: 50,
-      8: 44,
-      9: 39,
-    };
-    return sizes[gridSize] || 60; // fallback to 60px
-  })();
+  // Undo function
+  function undoGridChange() {
+    if (pastCurrentGridsForUndo.length > 1) {
+      // Remove the current state and go back to the previous one
+      pastCurrentGridsForUndo = pastCurrentGridsForUndo.slice(0, -1);
+      const previousTiles =
+        pastCurrentGridsForUndo[pastCurrentGridsForUndo.length - 1];
+      // Restore the tiles array directly to maintain tile IDs for animations
+      tiles = previousTiles.map((tile) => ({ ...tile }));
+      // Update currentGrid to match the restored tiles
+      updateCurrentGrid();
+    }
+  }
 
-  // Mobile sizes
-  $: mobileDraggingTileSize = (() => {
-    const mobileSizes = {
-      4: 65,
-      5: 55,
-      6: 48,
-      7: 42,
-      8: 37,
-      9: 33,
-    };
-    return mobileSizes[gridSize] || 50; // fallback to 50px
-  })();
+  // Track tiles changes for undo functionality
+  $effect(() => {
+    if (tiles.length > 0) {
+      // Create a deep copy of the current tiles array and add it to history
+      const tilesCopy = tiles.map((tile) => ({ ...tile }));
+
+      // Only add if it's different from the last stored tiles
+      const lastStored =
+        pastCurrentGridsForUndo[pastCurrentGridsForUndo.length - 1];
+      if (!lastStored || !tilesEqual(tilesCopy, lastStored)) {
+        pastCurrentGridsForUndo = [...pastCurrentGridsForUndo, tilesCopy];
+
+        // Limit history to prevent memory issues (keep last 50 states)
+        if (pastCurrentGridsForUndo.length > 50) {
+          pastCurrentGridsForUndo = pastCurrentGridsForUndo.slice(-50);
+        }
+      }
+    }
+  });
+
+  // Reset undo history when game ID changes (new game started)
+  $effect(() => {
+    if (currentGameId) {
+      pastCurrentGridsForUndo = [];
+    }
+  });
+
+  // Reset undo history when visual cues change (new puzzle or updated context)
+  $effect(() => {
+    // Watch for changes in tilesShownCorrect or tilesShownWrong
+    if (tilesShownCorrect || tilesShownWrong) {
+      pastCurrentGridsForUndo = [];
+    }
+  });
 
   // Utility function to prevent default when possible
   function preventDefaultIfPossible(event) {
@@ -140,16 +248,6 @@
       // Ignore passive event listener error - preventDefault is not possible
     }
   }
-
-  // Force reactivity for tile classes when hover state changes
-  $: hoveredIndex,
-    draggedIndex,
-    isDragging,
-    recentlySwapped,
-    clickedTiles,
-    (() => {
-      // This reactive statement ensures tiles re-render when hover state changes
-    })();
 
   function handleDragStart(event, tileIndex) {
     // In single-turn mode, don't allow dragging tiles that were previously correct
@@ -321,6 +419,15 @@
 
   function swapTiles(targetIndex) {
     if (draggedIndex !== null && draggedIndex !== targetIndex) {
+      // Don't swap if both tiles have the same value (no effect on grid)
+      if (tiles[draggedIndex].value === tiles[targetIndex].value) {
+        // Reset drag state without swapping
+        draggedTile = null;
+        draggedIndex = null;
+        dragStartTime = null;
+        return;
+      }
+
       // Swap tiles in the array - this changes their positions while keeping stable keys
       const newTiles = [...tiles];
       [newTiles[draggedIndex], newTiles[targetIndex]] = [
@@ -532,6 +639,15 @@
     {/each}
   </div>
 
+  <!-- Undo Button -->
+  <button
+    onclick={undoGridChange}
+    class="undo-btn"
+    disabled={!canUndo || isTransitioning}
+  >
+    ↶ Undo
+  </button>
+
   <!-- Dragging tile overlay -->
   {#if isDragging && currentTouchPosition && draggedTile}
     <div
@@ -562,6 +678,35 @@
     color: #7f8c8d;
     margin-bottom: 0.5rem;
     font-weight: 500;
+  }
+
+  .undo-btn {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .undo-btn:hover:not(:disabled) {
+    background: #e9ecef;
+    color: #495057;
+    border-color: #adb5bd;
+  }
+
+  .undo-btn:disabled {
+    background: #f8f9fa;
+    color: #adb5bd;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   .grid {
@@ -818,6 +963,24 @@
       background: #dbd17a;
       color: #b64e0e;
       font-weight: 700;
+    }
+
+    .undo-btn {
+      background: #2a2a2a;
+      color: #888;
+      border: 1px solid #555;
+    }
+
+    .undo-btn:hover:not(:disabled) {
+      background: #333;
+      color: #bbb;
+      border-color: #666;
+    }
+
+    .undo-btn:disabled {
+      background: #1a1a1a;
+      color: #555;
+      border-color: #333;
     }
   }
 </style>

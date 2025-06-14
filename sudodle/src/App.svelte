@@ -34,17 +34,6 @@
   let currentGridFeedback = $state(null);
   let puzzles = $state(null);
 
-  // Derived values using $derived
-  let isCheckDisabled = $derived(
-    isTransitioning ||
-      (settings.strictMode && !checkLatinSquare(currentGrid)) ||
-      maxGuesses - currentTurn <= 0
-  );
-
-  let outOfTries = $derived(
-    gameState === "playing" && maxGuesses - currentTurn <= 0
-  );
-
   // Tile indices for visual cues
   let tilesShownCorrect = $state({}); // {tileIndex: valueShownCorrectAtThisPosition}
   let tilesShownWrong = $state({}); // {tileIndex: [tile values shown wrong at this position]}
@@ -55,6 +44,17 @@
   // Create derived values to ensure reactivity
   let tilesCorrectForGrid = $derived(tilesShownCorrect);
   let tilesWrongForGrid = $derived(tilesShownWrong);
+
+  // Derived values using $derived
+  let isCheckDisabled = $derived(
+    isTransitioning ||
+      (settings.strictMode && !checkLatinSquare(currentGrid)) ||
+      maxGuesses - currentTurn <= 0
+  );
+
+  let outOfTries = $derived(
+    gameState === "playing" && maxGuesses - currentTurn <= 0
+  );
 
   // Component lifecycle
   onMount(() => {
@@ -154,7 +154,6 @@
     const puzzle = puzzlesForGridSize[settings.puzzleId];
     // Initialize correct tiles based on puzzle indices
 
-    console.log({ puzzle });
     tilesShownCorrect = puzzle.reduce((acc, tileIndex) => {
       if (tileIndex < settings.gridSize * settings.gridSize) {
         const row = Math.floor(tileIndex / settings.gridSize);
@@ -163,8 +162,6 @@
       }
       return acc;
     }, {});
-
-    console.log({ tilesShownCorrect });
 
     // Initialize objects to track incorrect tiles
     const wrongTiles = {};
@@ -186,7 +183,6 @@
 
     // Update the tile tracking objects
     tilesShownWrong = wrongTiles;
-    console.log({ tilesShownWrong });
   }
 
   async function loadPuzzles() {
@@ -229,10 +225,6 @@
 
         return puzzles;
       });
-  }
-
-  function initializeCurrentGrid() {
-    currentGrid = cyclicLatinSquare(settings.gridSize);
   }
 
   // ===== Visual Cues Update =====
@@ -286,7 +278,6 @@
         }
       }
     }
-    console.log("HEEERE");
     tilesShownCorrect = correctTiles;
     tilesShownWrong = wrongTiles;
   }
@@ -294,13 +285,11 @@
   // ===== Game Flow/Logic =====
   async function startGame() {
     gameState = "playing";
-    initializeCurrentGrid();
-    console.log(currentGrid);
+    currentGrid = cyclicLatinSquare(settings.gridSize);
     previousGrids = [];
 
     if (settings.mode === "single-turn") {
       await pickPuzzle();
-      console.log({ tilesShownCorrect, tilesShownWrong });
     } else {
       await generateSolutionGrid();
       currentTurn = 1;
@@ -457,6 +446,7 @@
     previousGrids = [];
     currentTurn = 1;
     showSettingsModal = false;
+
     startGame();
   }
 
@@ -529,7 +519,9 @@
               tilesShownWrong={tilesWrongForGrid}
               feedback={currentGridFeedback}
               mode={settings.mode}
+              {isTransitioning}
             />
+
             {#if settings.mode === "guesses"}
               <button
                 onclick={checkGridGuess}
@@ -746,9 +738,9 @@
   }
 
   .discrete-btn.share-btn:hover {
-    background: #f5f5f5;
-    color: #777;
-    border-color: #ddd;
+    background: #222;
+    color: #888;
+    border-color: #444;
   }
 
   /* Responsive design */
