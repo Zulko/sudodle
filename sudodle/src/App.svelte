@@ -40,9 +40,6 @@
   let tilesShownCorrect = $state({}); // {tileIndex: valueShownCorrectAtThisPosition}
   let tilesShownWrong = $state({}); // {tileIndex: [tile values shown wrong at this position]}
 
-  $inspect("App - tilesShownCorrect:", tilesShownCorrect);
-  $inspect("App - tilesShownWrong:", tilesShownWrong);
-
   // Create derived values to ensure reactivity
   let tilesCorrectForGrid = $derived(tilesShownCorrect);
   let tilesWrongForGrid = $derived(tilesShownWrong);

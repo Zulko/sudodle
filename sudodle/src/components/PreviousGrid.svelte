@@ -1,12 +1,13 @@
 <script>
   import { _, locale } from "svelte-i18n";
-  export let previousGrid;
+
+  let { previousGrid } = $props();
 
   // Get the grid size from the grid data
-  $: gridSize = previousGrid.grid.length;
+  let gridSize = $derived(previousGrid.grid.length);
 
   // Calculate border radius based on grid size - larger grids get smaller radius
-  $: borderRadius = (() => {
+  let borderRadius = $derived(() => {
     const radiusMap = {
       4: 10,
       5: 8,
@@ -16,7 +17,7 @@
       9: 4,
     };
     return radiusMap[gridSize] || Math.max(4, 14 - gridSize); // fallback formula
-  })();
+  });
 
   function getOrdinal(num) {
     if ($locale === "fr") {
