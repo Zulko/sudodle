@@ -17,7 +17,6 @@
   let settings = $state({
     gridSize: 5,
     strictMode: false,
-    visualCues: true,
     seed: null,
     mode: "single-turn", // "guesses" or "single-turn"
     puzzleId: null,
@@ -72,9 +71,6 @@
   // Handle mode change effects
   $effect(() => {
     if (settings.mode === "single-turn") {
-      // Set visual cues to true for single-turn mode
-      settings.visualCues = true;
-
       // If current grid size is not valid for single-turn, reset to 6
       if (settings.gridSize > 7) {
         settings.gridSize = 6;
@@ -98,9 +94,6 @@
     }
     if (urlParams.has("strictMode")) {
       settings.strictMode = urlParams.get("strictMode") === "true";
-    }
-    if (urlParams.has("visualCues")) {
-      settings.visualCues = urlParams.get("visualCues") === "true";
     }
     if (urlParams.has("seed")) {
       settings.seed = parseInt(urlParams.get("seed"));
@@ -129,7 +122,6 @@
     } else {
       params.set("gridSize", settings.gridSize.toString());
       params.set("strictMode", settings.strictMode.toString());
-      params.set("visualCues", settings.visualCues.toString());
       if (settings.seed) {
         params.set("seed", settings.seed.toString());
       }
@@ -253,7 +245,7 @@
 
   // ===== Visual Cues Update =====
   function updateVisualCues() {
-    if (!settings.visualCues || currentGrid.length === 0) {
+    if (currentGrid.length === 0) {
       tilesShownCorrect = {};
       tilesShownWrong = {};
       return;
@@ -603,7 +595,6 @@
       bind:mode={settings.mode}
       bind:gridSize={settings.gridSize}
       bind:strictMode={settings.strictMode}
-      bind:visualCues={settings.visualCues}
       bind:difficulty={settings.difficulty}
       onStartGame={newGame}
       onCancel={hideSettingsModal}

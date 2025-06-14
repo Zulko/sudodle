@@ -5,7 +5,6 @@
     mode = $bindable(),
     gridSize = $bindable(),
     strictMode = $bindable(),
-    visualCues = $bindable(),
     difficulty = $bindable(),
     onStartGame,
     onCancel,
@@ -122,21 +121,6 @@
             </div>
           {/if}
           {#if mode !== "single-turn"}
-            <div class="setting-row">
-              <div class="switch-setting">
-                <div class="switch-container">
-                  <label class="switch">
-                    <input
-                      type="checkbox"
-                      bind:checked={visualCues}
-                      aria-label="Visual cues toggle"
-                    />
-                    <span class="slider"></span>
-                  </label>
-                  <span class="switch-text">{$_("visualCues")}</span>
-                </div>
-              </div>
-            </div>
             <div class="setting-row">
               <div class="switch-setting">
                 <div class="switch-container">
