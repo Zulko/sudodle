@@ -18,7 +18,7 @@ def load_and_process_puzzles(csv_file):
     df["grid_size"] = df["compacted_puzzle"].str[0].astype(int)
 
     # For 5x5 grids, only use 1/5th of the puzzles
-    df_5x5 = df[df["grid_size"] == 5].iloc[::5]  # Take every 5th row
+    df_5x5 = df[df["grid_size"] == 5].iloc[::7]  # Take every 5th row
     df_others = df[df["grid_size"] != 5]
     df = (
         pd.concat([df_others, df_5x5])
@@ -35,8 +35,6 @@ def load_and_process_puzzles(csv_file):
         if grid_size not in puzzle_data:
             puzzle_data[grid_size] = {}
         group_data = group.to_dict("records")
-        if grid_size == 5:
-            group_data = group_data[::7]
         puzzle_data[grid_size][level] = group_data
 
     return puzzle_data

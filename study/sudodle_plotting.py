@@ -1,11 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-from sudodle_simulation import (
-    standardize_tile_tuple,
-    cyclic_latin_square,
-    parse_puzzles_from_txt,
-)
+from sudodle_simulation import cyclic_latin_square
 
 
 def plot_puzzle(N, well_placed_tiles):

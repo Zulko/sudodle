@@ -8,10 +8,29 @@
         @page {
             size: A4;
             margin: 2cm;
+            @bottom-left {
+                content: "Sudodles - Zulko 2025 - CC BY 4.0";
+                font-family: "Source Sans 3", serif;
+                font-size: 10pt;
+                color: #7f8c8d;
+                margin-top: 0.5cm;
+                padding-bottom: 0.3cm;
+                height: 2em;
+                border-top: 1px solid #bdc3c7;
+                width: 100%;
+            }
+        }
+        
+        @page title {
+            size: A4;
+            margin: 2cm;
+            @top-left {
+                content: "";
+            }
         }
         
         body {
-            font-family: "Times New Roman", serif;
+            font-family: "Source Serif 4",  serif;
             line-height: 1.6;
             color: #333;
             margin: 0;
@@ -22,12 +41,20 @@
             text-align: center;
             padding-top: 8cm;
             page-break-after: always;
+            page: title;
         }
         
         .title-page h1 {
             font-size: 4em;
-            margin-bottom: 0.5em;
+            margin-bottom: 0em;
             color: #2c3e50;
+            font-family: "Source Sans 3", sans-serif;
+        }
+        .title-page h2 {
+            font-size: 1.5em;
+            margin-top: -0.5em;
+            color: #4d5a68;
+            font-family: "Source Sans 3", sans-serif;
         }
         
         .title-page .subtitle {
@@ -47,6 +74,7 @@
             border-bottom: 3px solid #3498db;
             padding-bottom: 0.5em;
             margin-bottom: 1em;
+            font-family: "Source Sans 3", sans-serif;
         }
         
         .section h2 {
@@ -54,15 +82,16 @@
             color: #34495e;
             margin-top: 2em;
             margin-bottom: 1em;
+            font-family: "Source Sans 3", sans-serif;
         }
         
         .puzzle-container {
-            margin-bottom: 2em;
+            margin-bottom: 0.5em;
             page-break-inside: avoid;
             display: inline-block;
-            width: 48%;
+            width: 45%;
+            margin-left: 3%;
             vertical-align: top;
-            margin-right: 2%;
         }
         
         .puzzle-container h3 {
@@ -71,60 +100,18 @@
             color: #2c3e50;
         }
         
-        .sudodle-grid {
-            border-collapse: collapse;
-            margin: 1em auto;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-        
-        .sudodle-grid td {
-            width: 2em;
-            height: 2em;
-            text-align: center;
-            vertical-align: middle;
-            border: 2px solid #2c3e50;
-        }
-        
-        .sudodle-grid.size-4 td {
-            width: 2.5em;
-            height: 2.5em;
-            font-size: 1.4em;
-        }
-        
-        .sudodle-grid.size-5 td {
-            width: 2.2em;
-            height: 2.2em;
-            font-size: 1.2em;
-        }
-        
-        .sudodle-grid.size-6 td {
-            width: 2em;
-            height: 2em;
-            font-size: 1.1em;
-        }
-        
-        .sudodle-grid.size-7 td {
-            width: 1.8em;
-            height: 1.8em;
-            font-size: 1em;
-        }
-        
-        .sudodle-grid td.given {
-            background-color: #27ae60;
-            color: white;
-        }
-        
-        .sudodle-grid td.empty {
-            background-color: #ecf0f1;
-            color: #bdc3c7;
-        }
-        
         .puzzle-id {
             text-align: center;
-            font-size: 0.9em;
+            font-size: 0.7em;
             color: #95a5a6;
-            margin-top: 0.5em;
+            margin-top: -1em;
+        }
+
+        .puzzle-container img {
+            display: block;
+            margin: 1em auto;
+            width: 90%;
+            height: auto;
         }
         
         .puzzles-section {
@@ -145,9 +132,15 @@
         .intro p {
             margin-bottom: 1em;
             text-align: justify;
+            width: 80%;
+            margin: 2em auto;
         }
         
         .intro strong {
+            color: #2c3e50;
+        }
+
+        .intro a {
             color: #2c3e50;
         }
         
@@ -158,52 +151,83 @@
         .intro li {
             margin-bottom: 0.5em;
         }
+        
+        .info-box {
+            font-size: 0.8em;
+            border: 1.5px solid #2c3e50;
+            padding: 1.2em 1.5em;
+            margin: 3em auto;
+            position: relative;
+            border-radius: 0.3em;
+            font-family: "Source Sans 3", sans-serif;
+        }
+        
+        .info-box-title {
+            background: white;
+            color: #2c3e50;
+            padding: 0.3em 0.8em;
+            
+            font-weight: 600;
+            font-size: 1em;
+            position: absolute;
+            top: -1.2em;
+            left: 1.5em;
+        }
+        
+        .info-box p {
+            width: 95%;
+            margin: 0 auto;
+            text-align: justify;
+            color: #2c3e50;
+            line-height: 1.7;
+        }
+        
+        .info-box a {
+            color: #2c3e50;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <!-- Title Page -->
     <div class="title-page">
         <h1>Sudodles</h1>
-        <div class="subtitle">A Collection of Latin Square Puzzles</div>
-        <p>Organized by Grid Size and Difficulty</p>
+        <h2> Zulko, 2025</h2>
     </div>
 
     <!-- Introduction -->
     <div class="intro">
-        <h1>Introduction to Sudodles</h1>
+        <h1>How to play</h1>
         <p>
-            Welcome to the fascinating world of Sudodles! This puzzle game combines elements of logic, 
-            deduction, and Latin square mathematics to create an engaging and challenging experience.
+            Larissa made this <i>latin square</i>, where each digit appears once per row and column.
+            Quentin says <i>“I made a latin square too! Let me color the positions our squares have in common”</i>.
+            What is Quentin’s square?
+        </p>
+
+        <p>
+            <img src="svgs/51ACM.svg" alt="Puzzle" style="display: block; margin: 0 auto; width: 55%;">
+        </p>
+       
+        <p>
+            To solve Sudodles, you must use logical deduction to replace all the grey digits while ensuring that each
+            digit is present exactly once per row and column.
         </p>
         <p>
-            <strong>How to Play:</strong><br>
-            In Sudodles, you start with a cyclic Latin square where each number appears exactly once 
-            in each row and column. Some positions are marked as "correct" (shown in green), while 
-            others are "wrong" and need to be deduced. Your goal is to figure out what the correct 
-            Latin square should be.
+            The 400 puzzles in this collection are organized by grid size and level.
+            You might also like the Sudodle web app at <a href="https://sudodle.app">sudodle.app</a>,
+            which features a thousand more puzzles, and a multi-turn mode.
         </p>
+        <div class="info-box">
+            <div class="info-box-title">Share it!</div>
+            <p>
+                This book is licensed under a <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a> (CC BY 4.0). You are free to share and adapt this work as long as you give appropriate credit.
+                The app and code for finding new Sudodles are open-source and hosted at
+                <a href="https://github.com/zulko/sudodle">https://github.com/zulko/sudodle</a>.
+            </p>
+        </div>
+
         <p>
-            <strong>Rules:</strong><br>
-            • Each row must contain all numbers from 1 to N exactly once<br>
-            • Each column must contain all numbers from 1 to N exactly once<br>
-            • Green cells show the correct numbers for those positions<br>
-            • All other positions contain incorrect numbers that must be changed<br>
-            • Use logic and deduction to find the unique solution
-        </p>
-        <p>
-            <strong>Difficulty Levels:</strong><br>
-            • <strong>Normal:</strong> Can be solved with basic logical deduction<br>
-            • <strong>Hard:</strong> Requires more advanced techniques and some trial-and-error<br>
-            • <strong>Expert:</strong> Demands sophisticated reasoning and multiple deduction steps
-        </p>
-        <p>
-            The puzzles in this collection are organized by grid size (4×4, 5×5, 6×6, and 7×7) 
-            and then by difficulty level. Each puzzle has a unique identifier that can be used 
-            to reference specific challenges.
-        </p>
-        <p>
-            Good luck, and enjoy exploring the mathematical beauty of Latin squares!
-        </p>
+            
     </div>
 
     <!-- Puzzle Chapters -->
@@ -214,7 +238,9 @@
         {% for level in ['normal', 'hard', 'expert'] %}
             {% if level in puzzle_data[grid_size] and puzzle_data[grid_size][level] %}
             <div class="section">
-                <h2>{{ level.title() }} Difficulty ({{ puzzle_data[grid_size][level] | length }} puzzles)</h2>
+                {% if grid_size > 4 %}
+                  <h2>{{ level.title() }} Puzzles</h2>
+                {% endif %}
                 <div class="puzzles-section">
                     {% for puzzle in puzzle_data[grid_size][level] %}
                     <div class="puzzle-container">
