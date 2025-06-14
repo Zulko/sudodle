@@ -292,6 +292,7 @@ def complete_latin_square_backtrack_all_solutions(
     square = [[-1] * size for _ in range(size)]
     initial_time = time.time()
     solutions = []
+    branches = []  # counts the times the most constrained cell has more than 1 choice
 
     # Fill in known values
     for (i, j), value in known_values.items():
@@ -342,10 +343,14 @@ def complete_latin_square_backtrack_all_solutions(
         best_cell = None
         min_choices = size + 1
 
+        choices_by_cell = {}
+
         for i in range(size):
             for j in range(size):
                 if square[i][j] == -1:  # Empty cell
-                    choices = len(get_available_values(i, j))
+                    available_values = get_available_values(i, j)
+                    choices = len(available_values)
+                    choices_by_cell[(i, j)] = available_values
                     if choices == 0:
                         return (i, j), 0  # Dead end - return immediately
                     if choices < min_choices:
@@ -353,7 +358,26 @@ def complete_latin_square_backtrack_all_solutions(
                         best_cell = (i, j)
                         if choices == 1:
                             return best_cell, 1  # Can't get better than 1 choice
-
+        # check for lines and columns where some number can only be in one cell
+        for i in range(size):
+            for value in range(1, size + 1):
+                cells_that_can_have_value_in_row = [
+                    (i, j)
+                    for j in range(size)
+                    if value in choices_by_cell.get((i, j), [])
+                ]
+                if len(cells_that_can_have_value_in_row) == 1:
+                    return cells_that_can_have_value_in_row[0], 1
+        # check for lines and columns where some number can only be in one cell
+        for j in range(size):
+            for value in range(1, size + 1):
+                cells_that_can_have_value_in_column = [
+                    (i, j)
+                    for i in range(size)
+                    if value in choices_by_cell.get((i, j), [])
+                ]
+                if len(cells_that_can_have_value_in_column) == 1:
+                    return cells_that_can_have_value_in_column[0], 1
         return best_cell, min_choices
 
     def is_valid_partial():
@@ -375,6 +399,8 @@ def complete_latin_square_backtrack_all_solutions(
 
         # Find the most constrained empty cell
         cell, num_choices = find_most_constrained_cell()
+        if num_choices > 1:
+            branches.append(num_choices)
 
         if cell is None:
             # All cells filled successfully - save this solution
@@ -428,9 +454,12 @@ def complete_latin_square_backtrack_all_solutions(
     # Try to find all completions
     try:
         backtrack()
-        return solutions
+        return solutions, branches
     except TimeoutError:
-        return solutions  # Return whatever solutions we found before timing out
+        return (
+            solutions,
+            branches,
+        )  # Return whatever solutions we found before timing out
 
 
 def compare_squares(square, expected_square):
