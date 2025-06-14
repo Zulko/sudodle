@@ -104,12 +104,7 @@
     }
     if (urlParams.has("seed")) {
       settings.seed = parseInt(urlParams.get("seed"));
-    }
-    if (urlParams.has("mode")) {
-      const mode = urlParams.get("mode");
-      if (mode === "single-turn" || mode === "guesses") {
-        settings.mode = mode;
-      }
+      settings.mode = "guesses";
     }
     if (urlParams.has("puzzleId")) {
       settings.puzzleId = urlParams.get("puzzleId");
@@ -135,7 +130,6 @@
       params.set("gridSize", settings.gridSize.toString());
       params.set("strictMode", settings.strictMode.toString());
       params.set("visualCues", settings.visualCues.toString());
-      params.set("mode", settings.mode);
       if (settings.seed) {
         params.set("seed", settings.seed.toString());
       }
