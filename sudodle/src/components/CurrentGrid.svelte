@@ -690,8 +690,8 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    width: 100%;
-    margin-top: 0.5rem;
+    width: 95%;
+    margin-top: 1rem;
     margin-bottom: 0.5rem;
   }
 

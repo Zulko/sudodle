@@ -510,7 +510,7 @@
     // Check if Web Share API is supported and can share this data
     if (navigator.share && navigator.canShare) {
       const shareData = {
-        title: title,
+        title: title, // Not very compatible
         text: `${title}`, // Include title in text for iOS compatibility
         url: gameURL,
       };
@@ -800,6 +800,10 @@
     background: #222;
     color: #888;
     border-color: #444;
+  }
+
+  .check-btn {
+    width: 95%;
   }
 
   /* Responsive design */

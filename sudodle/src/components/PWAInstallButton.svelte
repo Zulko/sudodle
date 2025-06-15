@@ -63,10 +63,20 @@
 
 {#if showInstallButton}
   <p class="install-app-link">
-    <a onclick={handleInstallApp} class="install-app-btn">
+    <span
+      onclick={handleInstallApp}
+      class="install-app-btn"
+      role="button"
+      tabindex="0"
+      onkeydown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          handleInstallApp();
+        }
+      }}
+    >
       {$_("installApp") || "Install Sudodle as an app"}
       <span class="install-icon">📱</span>
-    </a>
+    </span>
   </p>
 {/if}
 
