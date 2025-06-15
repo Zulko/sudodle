@@ -115,7 +115,7 @@
         }
         
         .puzzles-section {
-            margin-bottom: 2em;
+            margin-bottom: 0em;
         }
         
         .intro {
@@ -199,13 +199,13 @@
     <div class="intro">
         <h1>How to play</h1>
         <p>
-            Larissa made this <i>latin square</i>, where each digit appears once per row and column.
-            Quentin says <i>“I made a latin square too! Let me color the positions our squares have in common”</i>.
+            Larissa made this <i>Latin square</i>, where each digit appears once per row and column.
+            Quentin said <i>“I made a Latin square too! Let me color the positions our squares have in common”</i>.
             What is Quentin’s square?
         </p>
 
         <p>
-            <img src="svgs/51ACM.svg" alt="Puzzle" style="display: block; margin: 0 auto; width: 55%;">
+            <img src="svgs/51AMO.svg" alt="Puzzle" style="display: block; margin: 0 auto; width: 55%;">
         </p>
        
         <p>
@@ -234,6 +234,9 @@
     {% for grid_size in puzzle_data.keys() | sort %}
     <div class="chapter">
         <h1>{{ grid_size }}×{{ grid_size }} Puzzles</h1>
+
+        <p>The green squares are correctly placed, the others are in the wrong position.
+            Rearrange them such that each digit appears once in every row and column.</p>
         
         {% for level in ['normal', 'hard', 'expert'] %}
             {% if level in puzzle_data[grid_size] and puzzle_data[grid_size][level] %}
@@ -241,14 +244,16 @@
                 {% if grid_size > 4 %}
                   <h2>{{ level.title() }} Puzzles</h2>
                 {% endif %}
+                {% for puzzle_pair in puzzle_data[grid_size][level] | batch(2) %}
                 <div class="puzzles-section">
-                    {% for puzzle in puzzle_data[grid_size][level] %}
+                    {% for puzzle in puzzle_pair %}
                     <div class="puzzle-container">
                         <img src="svgs/{{ puzzle['compacted_puzzle'] }}.svg" alt="Puzzle {{ puzzle['compacted_puzzle'] }}">
                         <p class="puzzle-id">ID: {{ puzzle['compacted_puzzle'] }}</p>
                     </div>
                     {% endfor %}
                 </div>
+                {% endfor %}
             </div>
             {% endif %}
         {% endfor %}
