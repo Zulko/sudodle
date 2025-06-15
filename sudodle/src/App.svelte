@@ -506,13 +506,36 @@
         });
       }
     }
-    if (navigator.share) {
-      navigator.share({
+
+    // Check if Web Share API is supported and can share this data
+    if (navigator.share && navigator.canShare) {
+      const shareData = {
         title: title,
+        text: `${title}`, // Include title in text for iOS compatibility
         url: gameURL,
-      });
+      };
+
+      // Test if the data can be shared
+      if (navigator.canShare(shareData)) {
+        navigator.share(shareData).catch((error) => {
+          // Fallback to clipboard on share error
+          navigator.clipboard.writeText(`${title} ${gameURL}`);
+          alert($_("urlCopied"));
+        });
+      } else {
+        // Fallback: use text-only sharing which is more reliable on iOS
+        navigator
+          .share({
+            text: `${title} ${gameURL}`,
+          })
+          .catch((error) => {
+            navigator.clipboard.writeText(`${title} ${gameURL}`);
+            alert($_("urlCopied"));
+          });
+      }
     } else {
-      navigator.clipboard.writeText(gameURL);
+      // Fallback for browsers without Web Share API
+      navigator.clipboard.writeText(`${title} ${gameURL}`);
       alert($_("urlCopied"));
     }
   }
