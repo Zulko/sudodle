@@ -244,6 +244,7 @@ def complete_latin_square_backtrack_all_solutions(
     known_wrong_values={},
     timeout=2,
     max_solutions=None,
+    check_lines_and_columns=False,
 ):
     """
     Find all completions of a partial Latin square using optimized backtracking with constraints.
@@ -359,25 +360,26 @@ def complete_latin_square_backtrack_all_solutions(
                         if choices == 1:
                             return best_cell, 1  # Can't get better than 1 choice
         # check for lines and columns where some number can only be in one cell
-        for i in range(size):
-            for value in range(1, size + 1):
-                cells_that_can_have_value_in_row = [
-                    (i, j)
-                    for j in range(size)
-                    if value in choices_by_cell.get((i, j), [])
-                ]
-                if len(cells_that_can_have_value_in_row) == 1:
-                    return cells_that_can_have_value_in_row[0], 1
-        # check for lines and columns where some number can only be in one cell
-        for j in range(size):
-            for value in range(1, size + 1):
-                cells_that_can_have_value_in_column = [
-                    (i, j)
-                    for i in range(size)
-                    if value in choices_by_cell.get((i, j), [])
-                ]
-                if len(cells_that_can_have_value_in_column) == 1:
-                    return cells_that_can_have_value_in_column[0], 1
+        if check_lines_and_columns:
+            for i in range(size):
+                for value in range(1, size + 1):
+                    cells_that_can_have_value_in_row = [
+                        (i, j)
+                        for j in range(size)
+                        if value in choices_by_cell.get((i, j), [])
+                    ]
+                    if len(cells_that_can_have_value_in_row) == 1:
+                        return cells_that_can_have_value_in_row[0], 1
+            # check for lines and columns where some number can only be in one cell
+            for j in range(size):
+                for value in range(1, size + 1):
+                    cells_that_can_have_value_in_column = [
+                        (i, j)
+                        for i in range(size)
+                        if value in choices_by_cell.get((i, j), [])
+                    ]
+                    if len(cells_that_can_have_value_in_column) == 1:
+                        return cells_that_can_have_value_in_column[0], 1
         return best_cell, min_choices
 
     def is_valid_partial():
@@ -659,7 +661,7 @@ def complete_latin_square_backtrack(
         List[List[int]]: A completed N×N Latin square with values 1 to N,
         or None if no valid completion exists.
     """
-    solutions = complete_latin_square_backtrack_all_solutions(
+    solutions, branches = complete_latin_square_backtrack_all_solutions(
         size, known_values, known_wrong_values, timeout, max_solutions=1
     )
     return solutions[0] if solutions else None

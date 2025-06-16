@@ -40,7 +40,7 @@ def plot_puzzle(N, well_placed_tiles):
     return ax
 
 
-def plot_puzzles_pdf_from_txt(puzzles, grid_size, target_file=None):
+def plot_puzzles_to_pdf(puzzles, grid_size, target_file=None):
     with PdfPages(target_file) as pdf:
         for tiles in puzzles:
             ax = plot_puzzle(grid_size, tiles)  # Use the correct N parameter
