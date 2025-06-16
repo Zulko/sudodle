@@ -18,7 +18,7 @@ To create a paper sudodle puzzle, we need to find a minimal subset of positions 
 The numbers of puzzles given below are after puzzles that are equivalent by symmetry are deduplicated. There are probably more equivalences between the problems (via number permutations, rows permutations, etc).
 
 - For 4x4 grids, we need at least 2 "correct" positions. There are 26 problems involving 2 "correct" positions.
-- For 5x5 grids, we need at least 4 "correct" positions. There are 1500 problems involving 4 "correct" positions.
+- For 5x5 grids, we need at least 4 "correct" positions. There are 1500 problems involving 4 "correct" positions. Around 500 of these problems can be solved by logically deducing the digits one by one, the rest requires to take a guess at some point and backtrack later.
 - For 6x6 grids, we need at least 6 "correct" positions. There are 57 problems involving 6 "correct" positions.
 - For 7x7 grids, scanning 30 million combinations with 9 correct positions yields 0 solution, so 10 "correct" positions seem to be needed. With 10 correct positions, one must scan 100,000 random puzzles to find one with a unique solution.
 
