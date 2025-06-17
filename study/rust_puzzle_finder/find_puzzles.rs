@@ -34,11 +34,17 @@ struct Args {
     random_tries: Option<usize>,
 }
 
-/// Find all completions of a partial Latin square using optimized backtracking with constraints.
+/// Find all completions of a partial Latin square using advanced optimized backtracking.
 ///
 /// This function takes a partially filled Latin square with known correct values
-/// and known incorrect values, then uses backtracking with the Most Constrained
-/// Variable (MCV) heuristic to find all valid completions.
+/// and known incorrect values, then uses multiple optimization techniques including:
+/// - 🔥 Constraint Propagation Cascading - automatically fills forced moves
+/// - 🎯 Naked Singles Detection - cells with only one possible value
+/// - 🔍 Hidden Singles Detection - values with only one possible position
+/// - ⚡ Efficient Bitmask Operations - O(1) constraint checking
+/// - 🧠 Most Constrained Variable (MCV) heuristic - tackle hardest cells first
+/// - 🚀 Initial Preprocessing - solve obvious cells before backtracking
+/// - 🛡️ Advanced Validity Checking - early impossible state detection
 ///
 /// # Parameters
 /// - `size`: Size of the Latin square (N×N). Default is 5.
@@ -55,15 +61,13 @@ struct Args {
 /// Returns empty vector if no valid completion exists.
 ///
 /// # Algorithm
-/// 1. Initialize square with known values
-/// 2. Use MCV heuristic to select the most constrained empty cell
-/// 3. Try all valid values for that cell
-/// 4. Recursively solve the remaining cells
-/// 5. When a complete solution is found, save it and continue searching
-/// 6. Stop when max_solutions is reached or all possibilities are exhausted
-///
-/// Note: The MCV heuristic significantly improves performance by tackling
-/// the most constrained cells first, reducing the search space.
+/// 1. Initialize square with known values and bitmasks
+/// 2. 🚀 Initial preprocessing: apply constraint propagation to solve obvious cells
+/// 3. Use MCV heuristic to select the most constrained empty cell
+/// 4. Try each candidate value with full constraint propagation
+/// 5. Recursively solve remaining cells with advanced pruning
+/// 6. When complete solution found, save it and continue searching
+/// 7. Stop when max_solutions is reached or all possibilities exhausted
 pub fn complete_latin_square_backtrack_all_solutions(
     size: usize,
     known_values: &HashMap<(usize, usize), usize>,
@@ -97,6 +101,137 @@ pub fn complete_latin_square_backtrack_all_solutions(
             }
         }
     }
+
+    // 🔥 CONSTRAINT PROPAGATION CASCADE - automatically fills forced moves
+    // Returns true if progress was made, false if contradiction found
+    let apply_constraint_propagation = |square: &mut Vec<Vec<usize>>, 
+                                           row_used: &mut Vec<u32>, 
+                                           col_used: &mut Vec<u32>| -> Result<bool, ()> {
+        let mut progress = true;
+        let mut total_progress = false;
+        
+        while progress {
+            progress = false;
+            
+            // 🎯 NAKED SINGLES DETECTION - cells with only one possible value
+            for i in 0..size {
+                for j in 0..size {
+                    if square[i][j] == 0 {
+                        let used = row_used[i] | col_used[j];
+                        let avail_mask = full_mask & !used;
+                        
+                        // Apply known wrong values constraint
+                        let mut final_mask = avail_mask;
+                        if let Some(wrong_values) = known_wrong_values.get(&(i, j)) {
+                            for &wrong_val in wrong_values {
+                                let wrong_bit = 1u32 << (wrong_val - 1);
+                                final_mask &= !wrong_bit;
+                            }
+                        }
+                        
+                        if final_mask == 0 {
+                            return Err(()); // Contradiction found
+                        }
+                        
+                        // Check if exactly one bit is set (naked single)
+                        if final_mask & (final_mask - 1) == 0 {
+                            let value = final_mask.trailing_zeros() as usize + 1;
+                            let bit = 1u32 << (value - 1);
+                            
+                            square[i][j] = value;
+                            row_used[i] |= bit;
+                            col_used[j] |= bit;
+                            progress = true;
+                            total_progress = true;
+                        }
+                    }
+                }
+            }
+            
+            // 🔍 HIDDEN SINGLES DETECTION - values with only one possible position
+            // Check rows for hidden singles
+            for i in 0..size {
+                for val in 1..=size {
+                    let bit = 1u32 << (val - 1);
+                    if (row_used[i] & bit) == 0 { // Value not yet in this row
+                        let mut possible_positions = Vec::new();
+                        
+                        for j in 0..size {
+                            if square[i][j] == 0 {
+                                let cell_used = row_used[i] | col_used[j];
+                                let mut can_place = (cell_used & bit) == 0;
+                                
+                                // Check known wrong values
+                                if can_place {
+                                    if let Some(wrong_values) = known_wrong_values.get(&(i, j)) {
+                                        can_place = !wrong_values.contains(&val);
+                                    }
+                                }
+                                
+                                if can_place {
+                                    possible_positions.push(j);
+                                }
+                            }
+                        }
+                        
+                        if possible_positions.is_empty() {
+                            return Err(()); // Contradiction: value can't be placed anywhere
+                        } else if possible_positions.len() == 1 {
+                            // Hidden single found
+                            let j = possible_positions[0];
+                            square[i][j] = val;
+                            row_used[i] |= bit;
+                            col_used[j] |= bit;
+                            progress = true;
+                            total_progress = true;
+                        }
+                    }
+                }
+            }
+            
+            // Check columns for hidden singles
+            for j in 0..size {
+                for val in 1..=size {
+                    let bit = 1u32 << (val - 1);
+                    if (col_used[j] & bit) == 0 { // Value not yet in this column
+                        let mut possible_positions = Vec::new();
+                        
+                        for i in 0..size {
+                            if square[i][j] == 0 {
+                                let cell_used = row_used[i] | col_used[j];
+                                let mut can_place = (cell_used & bit) == 0;
+                                
+                                // Check known wrong values
+                                if can_place {
+                                    if let Some(wrong_values) = known_wrong_values.get(&(i, j)) {
+                                        can_place = !wrong_values.contains(&val);
+                                    }
+                                }
+                                
+                                if can_place {
+                                    possible_positions.push(i);
+                                }
+                            }
+                        }
+                        
+                        if possible_positions.is_empty() {
+                            return Err(()); // Contradiction: value can't be placed anywhere
+                        } else if possible_positions.len() == 1 {
+                            // Hidden single found
+                            let i = possible_positions[0];
+                            square[i][j] = val;
+                            row_used[i] |= bit;
+                            col_used[j] |= bit;
+                            progress = true;
+                            total_progress = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        Ok(total_progress)
+    };
 
     // Helper function to get available values for cell (i, j)
     let get_available_values = |square: &Vec<Vec<usize>>, 
@@ -164,6 +299,8 @@ pub fn complete_latin_square_backtrack_all_solutions(
 
         (best_cell, min_choices)
     };
+
+
 
     // Enhanced early termination with constraint propagation
     let has_valid_assignment = |square: &Vec<Vec<usize>>, 
@@ -239,7 +376,7 @@ pub fn complete_latin_square_backtrack_all_solutions(
         true
     };
 
-    // Backtracking function
+    // 🚀 ENHANCED BACKTRACKING with optimized constraint propagation
     fn backtrack(
         square: &mut Vec<Vec<usize>>,
         row_used: &mut Vec<u32>,
@@ -252,6 +389,7 @@ pub fn complete_latin_square_backtrack_all_solutions(
         get_available_values: &dyn Fn(&Vec<Vec<usize>>, &Vec<u32>, &Vec<u32>, usize, usize, &mut Vec<usize>) -> usize,
         find_most_constrained_cell: &dyn Fn(&Vec<Vec<usize>>, &Vec<u32>, &Vec<u32>) -> (Option<(usize, usize)>, usize),
         has_valid_assignment: &dyn Fn(&Vec<Vec<usize>>, &Vec<u32>, &Vec<u32>) -> bool,
+        apply_constraint_propagation: &dyn Fn(&mut Vec<Vec<usize>>, &mut Vec<u32>, &mut Vec<u32>) -> Result<bool, ()>,
     ) {
         // Check if we've found enough solutions
         if let Some(max) = max_solutions {
@@ -271,7 +409,7 @@ pub fn complete_latin_square_backtrack_all_solutions(
             let mut candidates = Vec::new();
             let _choices = get_available_values(square, row_used, col_used, i, j, &mut candidates);
 
-            // Try each candidate value
+            // Try each candidate value with proper state management
             for &value in &candidates {
                 // Early termination check
                 if let Some(max) = max_solutions {
@@ -282,13 +420,28 @@ pub fn complete_latin_square_backtrack_all_solutions(
 
                 let bit = 1u32 << (value - 1);
 
+                // Save complete state before making changes
+                let original_square: Vec<Vec<usize>> = square.iter().map(|row| row.clone()).collect();
+                let original_row_used = row_used.clone();
+                let original_col_used = col_used.clone();
+
                 // Place the value
                 square[i][j] = value;
                 row_used[i] |= bit;
                 col_used[j] |= bit;
 
-                // Quick validity check before deeper recursion
-                if has_valid_assignment(square, row_used, col_used) {
+                // Apply constraint propagation after placing value
+                let mut should_continue = true;
+                let empty_cells = square.iter().flatten().filter(|&&x| x == 0).count();
+                if empty_cells < size * size / 2 {  // Only when puzzle is more than half filled
+                    match apply_constraint_propagation(square, row_used, col_used) {
+                        Err(()) => should_continue = false, // Contradiction found
+                        Ok(_) => {} // Continue with current state
+                    }
+                }
+
+                // 🛡️ Enhanced validity check before deeper recursion
+                if should_continue && has_valid_assignment(square, row_used, col_used) {
                     backtrack(
                         square,
                         row_used,
@@ -301,13 +454,14 @@ pub fn complete_latin_square_backtrack_all_solutions(
                         get_available_values,
                         find_most_constrained_cell,
                         has_valid_assignment,
+                        apply_constraint_propagation,
                     );
                 }
 
-                // Backtrack: remove the value
-                square[i][j] = 0;
-                row_used[i] ^= bit;
-                col_used[j] ^= bit;
+                // Restore complete state
+                *square = original_square;
+                *row_used = original_row_used;
+                *col_used = original_col_used;
             }
         } else {
             // All cells filled successfully - save this solution
@@ -347,12 +501,21 @@ pub fn complete_latin_square_backtrack_all_solutions(
         }
     }
 
-    // Initial validity check
+    // 🚀 INITIAL PREPROCESSING - solve obvious cells only if puzzle is sufficiently constrained
+    let initial_filled = square.iter().flatten().filter(|&&x| x != 0).count();
+    if initial_filled > size {  // Only preprocess if we have enough initial constraints
+        match apply_constraint_propagation(&mut square, &mut row_used, &mut col_used) {
+            Err(()) => return Vec::new(), // Contradiction in initial state
+            Ok(_) => {} // Continue with preprocessed state
+        }
+    }
+
+    // Final validity check after preprocessing
     if !has_valid_assignment(&square, &row_used, &col_used) {
         return Vec::new();
     }
 
-    // Try to find all completions
+    // Try to find all completions with enhanced backtracking
     backtrack(
         &mut square,
         &mut row_used,
@@ -365,6 +528,7 @@ pub fn complete_latin_square_backtrack_all_solutions(
         &get_available_values,
         &find_most_constrained_cell,
         &has_valid_assignment,
+        &apply_constraint_propagation,
     );
 
     solutions
