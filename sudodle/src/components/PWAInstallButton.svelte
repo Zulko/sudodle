@@ -75,7 +75,6 @@
       }}
     >
       {$_("installApp") || "Install Sudodle as an app"}
-      <span class="install-icon">📱</span>
     </span>
   </p>
 {/if}

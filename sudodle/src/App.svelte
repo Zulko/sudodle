@@ -36,6 +36,10 @@
   let tStart = $state(null);
   let gameEndTime = $state(null);
 
+  // Wake lock state
+  let wakeLock = $state(null);
+  let hasInteracted = $state(false);
+
   // Tile indices for visual cues
   let tilesShownCorrect = $state({}); // {tileIndex: valueShownCorrectAtThisPosition}
   let tilesShownWrong = $state({}); // {tileIndex: [tile values shown wrong at this position]}
@@ -68,8 +72,8 @@
   });
 
   // Component lifecycle
-  onMount(async () => {
-    await parseURLparams();
+  onMount(() => {
+    parseURLparams();
     // Wait for i18n to be ready before starting the game
     const unsubscribe = isLoading.subscribe((loading) => {
       if (!loading) {
@@ -77,6 +81,15 @@
         unsubscribe();
       }
     });
+
+    // Handle visibility change for wake lock
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Cleanup on unmount
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      releaseWakeLock();
+    };
   });
 
   // Handle mode change effects
@@ -95,6 +108,52 @@
       autoCheckSingleTurn();
     }
   });
+
+  // Release wake lock when game ends
+  $effect(() => {
+    if (gameState === "won") {
+      releaseWakeLock();
+    }
+  });
+
+  // ===== Wake Lock Management =====
+  async function requestWakeLock() {
+    if (!("wakeLock" in navigator) || wakeLock) {
+      return;
+    }
+
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      console.log("Wake lock activated");
+
+      wakeLock.addEventListener("release", () => {
+        console.log("Wake lock released");
+      });
+    } catch (err) {
+      console.error("Failed to request wake lock:", err);
+    }
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock) {
+      wakeLock.release();
+      wakeLock = null;
+    }
+  }
+
+  async function handleVisibilityChange() {
+    if (document.visibilityState === "visible" && hasInteracted && !wakeLock) {
+      // Re-request wake lock when tab becomes visible again
+      await requestWakeLock();
+    }
+  }
+
+  function handleFirstInteraction() {
+    if (!hasInteracted) {
+      hasInteracted = true;
+      requestWakeLock();
+    }
+  }
 
   // ===== URL/Parameter Management =====
   async function parseURLparams() {
@@ -477,6 +536,8 @@
     previousGrids = [];
     currentTurn = 1;
     showSettingsModal = false;
+    hasInteracted = false;
+    releaseWakeLock();
 
     startGame();
   }
@@ -581,11 +642,15 @@
               feedback={currentGridFeedback}
               mode={settings.mode}
               {isTransitioning}
+              onFirstInteraction={handleFirstInteraction}
             />
 
             {#if settings.mode === "guesses"}
               <button
-                onclick={checkGridGuess}
+                onclick={() => {
+                  handleFirstInteraction();
+                  checkGridGuess();
+                }}
                 class="primary-btn check-btn {isTransitioning
                   ? 'transitioning'
                   : ''}"
@@ -620,12 +685,21 @@
         {#if gameState === "playing"}
           <div class="bottom-actions">
             <button
-              onclick={showNewGameModal}
+              onclick={() => {
+                handleFirstInteraction();
+                showNewGameModal();
+              }}
               class="discrete-btn {outOfTries ? 'out-of-tries' : ''}"
             >
               ↻ {$_("newGame")}
             </button>
-            <button onclick={shareGame} class="discrete-btn share-btn">
+            <button
+              onclick={() => {
+                handleFirstInteraction();
+                shareGame();
+              }}
+              class="discrete-btn share-btn"
+            >
               🔗 {$_("shareThisPuzzle")}
             </button>
           </div>

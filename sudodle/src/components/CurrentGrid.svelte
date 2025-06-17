@@ -11,6 +11,7 @@
     feedback = null,
     mode = "guesses",
     isTransitioning = false,
+    onFirstInteraction = () => {},
   } = $props();
 
   // State variables using Svelte 5 runes
@@ -262,6 +263,9 @@
       }
     }
 
+    // Trigger first interaction callback for wake lock
+    onFirstInteraction();
+
     draggedTile = tiles[tileIndex];
     draggedIndex = tileIndex;
     dragStartTime = Date.now();
@@ -326,6 +330,9 @@
         return;
       }
     }
+
+    // Trigger first interaction callback for wake lock
+    onFirstInteraction();
 
     draggedTile = tiles[tileIndex];
     draggedIndex = tileIndex;
@@ -549,6 +556,9 @@
     if (dragStartTime && now - dragStartTime < 200) {
       return;
     }
+
+    // Trigger first interaction callback for wake lock
+    onFirstInteraction();
 
     const tile = tiles[tileIndex];
     const { row, col } = indexToRowCol(tileIndex);
