@@ -384,8 +384,11 @@ def complete_latin_square_backtrack_all_solutions(
         if square[i][j] != -1:
             return []
 
+        # Values already used in this row or column
+        used = row_used[i] | col_used[j]
+
         # Get intersection of what's possible for this cell from row and column constraints
-        available_mask = full_mask
+        available_mask = full_mask & ~used  # Exclude already used values
         for v in range(size):
             if not (row_possible[i][v] & (1 << j)) or not (
                 col_possible[j][v] & (1 << i)
@@ -414,6 +417,9 @@ def complete_latin_square_backtrack_all_solutions(
             # Find all naked singles (hidden singles in rows)
             for i in range(size):
                 for v in range(size):
+                    # Skip if this value is already used in this row
+                    if row_used[i] & (1 << v):
+                        continue
                     possible_mask = row_possible[i][v]
                     if possible_mask != 0 and popcount(possible_mask) == 1:
                         j = find_single_bit_position(possible_mask)
@@ -426,10 +432,13 @@ def complete_latin_square_backtrack_all_solutions(
             # Find all naked singles (hidden singles in columns)
             for j in range(size):
                 for v in range(size):
+                    # Skip if this value is already used in this column
+                    if col_used[j] & (1 << v):
+                        continue
                     possible_mask = col_possible[j][v]
                     if possible_mask != 0 and popcount(possible_mask) == 1:
                         i = find_single_bit_position(possible_mask)
-                        if square[i][j] == -1:
+                        if square[i][j] == -1:  # Ensure cell is still empty
                             square[i][j] = v + 1
                             update_constraints_fast(i, j, v + 1)
                             changed = True
@@ -492,6 +501,21 @@ def complete_latin_square_backtrack_all_solutions(
 
         return True
 
+    def is_valid_latin_square(square):
+        """Check if a completed square is actually a valid Latin square"""
+        # Check rows for duplicates
+        for row in square:
+            if len(set(row)) != size:
+                return False
+
+        # Check columns for duplicates
+        for j in range(size):
+            col = [square[i][j] for i in range(size)]
+            if len(set(col)) != size:
+                return False
+
+        return True
+
     def find_most_constrained_cell():
         """Find empty cell with fewest possible values using enhanced heuristics"""
         best_cell = None
@@ -532,7 +556,10 @@ def complete_latin_square_backtrack_all_solutions(
     def restore_state(state):
         """Restore state for backtracking"""
         nonlocal square, row_used, col_used, row_possible, col_possible
-        square = state["square"]
+        # Fix: Properly restore the square contents, not just reassign the reference
+        for i in range(size):
+            for j in range(size):
+                square[i][j] = state["square"][i][j]
         row_used[:] = state["row_used"]
         col_used[:] = state["col_used"]
         for i in range(size):
@@ -561,9 +588,10 @@ def complete_latin_square_backtrack_all_solutions(
             1 for i in range(size) for j in range(size) if square[i][j] == -1
         )
         if empty_cells == 0:
-            # All cells filled successfully - save this solution
+            # All cells filled successfully - validate before saving
             solution = [row[:] for row in square]  # Deep copy
-            solutions.append(solution)
+            if is_valid_latin_square(solution):
+                solutions.append(solution)
             return
 
         # Find the most constrained empty cell
@@ -574,7 +602,8 @@ def complete_latin_square_backtrack_all_solutions(
         if cell is None:
             # Should not happen after propagation, but just in case
             solution = [row[:] for row in square]  # Deep copy
-            solutions.append(solution)
+            if is_valid_latin_square(solution):
+                solutions.append(solution)
             return
 
         if num_choices == 0:
@@ -646,7 +675,11 @@ def complete_latin_square_backtrack_all_solutions(
     empty_cells = sum(1 for i in range(size) for j in range(size) if square[i][j] == -1)
     if empty_cells == 0:
         solution = [row[:] for row in square]
-        return [solution], []
+        # Validate the solution before returning it
+        if is_valid_latin_square(solution):
+            return [solution], []
+        else:
+            return [], []  # Invalid solution, return no solutions
 
     # Try to find all completions
     try:
