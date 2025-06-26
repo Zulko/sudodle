@@ -871,9 +871,9 @@
   }
 
   .discrete-btn.share-btn:hover {
-    background: #222;
-    color: #888;
-    border-color: #444;
+    background: #f5f5f5;
+    color: #777;
+    border-color: #ddd;
   }
 
   .check-btn {
