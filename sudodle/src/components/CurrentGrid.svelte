@@ -283,6 +283,17 @@
     if (targetElement && targetElement.classList.contains("tile")) {
       const targetIndex = parseInt(targetElement.getAttribute("data-index"));
       if (!isNaN(targetIndex)) {
+        // In single-turn mode, don't set hover state on correct tiles
+        if (mode === "single-turn") {
+          const targetValue = tiles[targetIndex].value;
+          if (
+            targetIndex in tilesShownCorrect &&
+            tilesShownCorrect[targetIndex] === targetValue
+          ) {
+            hoveredIndex = null;
+            return;
+          }
+        }
         hoveredIndex = targetIndex;
       }
     }
@@ -297,6 +308,17 @@
     if (targetElement && targetElement.classList.contains("tile")) {
       const targetIndex = parseInt(targetElement.getAttribute("data-index"));
       if (!isNaN(targetIndex)) {
+        // In single-turn mode, don't set hover state on correct tiles
+        if (mode === "single-turn") {
+          const targetValue = tiles[targetIndex].value;
+          if (
+            targetIndex in tilesShownCorrect &&
+            tilesShownCorrect[targetIndex] === targetValue
+          ) {
+            hoveredIndex = null;
+            return;
+          }
+        }
         hoveredIndex = targetIndex;
       }
     }
@@ -381,6 +403,17 @@
       if (elementBelow && elementBelow.classList.contains("tile")) {
         const targetIndex = parseInt(elementBelow.getAttribute("data-index"));
         if (!isNaN(targetIndex)) {
+          // In single-turn mode, don't set hover state on correct tiles
+          if (mode === "single-turn") {
+            const targetValue = tiles[targetIndex].value;
+            if (
+              targetIndex in tilesShownCorrect &&
+              tilesShownCorrect[targetIndex] === targetValue
+            ) {
+              hoveredIndex = null;
+              return;
+            }
+          }
           hoveredIndex = targetIndex;
         }
       } else {
@@ -426,6 +459,21 @@
 
   function swapTiles(targetIndex) {
     if (draggedIndex !== null && draggedIndex !== targetIndex) {
+      // In single-turn mode, don't allow swapping with tiles that were previously correct
+      if (mode === "single-turn") {
+        const targetValue = tiles[targetIndex].value;
+        if (
+          targetIndex in tilesShownCorrect &&
+          tilesShownCorrect[targetIndex] === targetValue
+        ) {
+          // Reset drag state without swapping
+          draggedTile = null;
+          draggedIndex = null;
+          dragStartTime = null;
+          return;
+        }
+      }
+
       // Don't swap if both tiles have the same value (no effect on grid)
       if (tiles[draggedIndex].value === tiles[targetIndex].value) {
         // Reset drag state without swapping
@@ -477,7 +525,16 @@
       classes.push("dragging");
     }
 
-    if (hoveredIndex === tileIndex && draggedIndex !== tileIndex) {
+    // Only add hover effect if not a correct tile in single-turn mode
+    if (
+      hoveredIndex === tileIndex &&
+      draggedIndex !== tileIndex &&
+      !(
+        mode === "single-turn" &&
+        tileIndex in tilesShownCorrect &&
+        tilesShownCorrect[tileIndex] === value
+      )
+    ) {
       classes.push("drag-hover");
     }
 
