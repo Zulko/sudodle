@@ -18,10 +18,13 @@ def load_and_process_puzzles(csv_file):
     df["grid_size"] = df["compacted_puzzle"].str[0].astype(int)
 
     # For 5x5 grids, only use 1/5th of the puzzles
-    df_5x5 = df[df["grid_size"] == 5].iloc[::7]  # Take every 5th row
-    df_others = df[df["grid_size"] != 5]
+    df_5x5 = df[df["grid_size"] == 5].iloc[::7]  # Take every 7th row
+    df_6x6 = df[df["grid_size"] == 6].iloc[::7]  # Take every 7th row
+    df_others = df[
+        (df["grid_size"] != 5) & (df["grid_size"] != 6)
+    ]  # Take every 7th row
     df = (
-        pd.concat([df_others, df_5x5])
+        pd.concat([df_others, df_5x5, df_6x6])
         .sort_values(["grid_size", "level", "difficulty"])
         .reset_index(drop=True)
     )

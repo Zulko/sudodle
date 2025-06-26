@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-from sudodle_simulation import cyclic_latin_square
+from .utils import cyclic_latin_square
 
 
 def plot_puzzle(N, well_placed_tiles):
