@@ -10,6 +10,13 @@
     onCancel,
   } = $props();
 
+  const difficultyLevels = {
+    4: ["normal"],
+    5: ["normal", "hard"],
+    6: ["normal", "hard", "expert"],
+    7: ["normal", "hard", "expert"],
+  };
+
   function handleKeydown(event) {
     if (event.key === "Escape") {
       onCancel();
@@ -27,7 +34,7 @@
 
   // Reset difficulty to normal if gridSize is 4 and current difficulty is not normal
   $effect(() => {
-    if (gridSize === 4 && difficulty !== "normal") {
+    if (!difficultyLevels[gridSize].includes(difficulty)) {
       difficulty = "normal";
     }
   });
@@ -98,10 +105,11 @@
               <div class="difficulty-group">
                 {#each ["normal", "hard", "expert"] as difficultyLevel}
                   <label
-                    class="difficulty-item {gridSize === 4 &&
-                    difficultyLevel !== 'normal'
-                      ? 'disabled'
-                      : ''}"
+                    class="difficulty-item {difficultyLevels[gridSize].includes(
+                      difficultyLevel
+                    )
+                      ? ''
+                      : 'disabled'}"
                   >
                     <input
                       type="radio"
