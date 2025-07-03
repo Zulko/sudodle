@@ -217,11 +217,6 @@
         pastCurrentGridsForUndo[pastCurrentGridsForUndo.length - 1];
       if (!lastStored || !tilesEqual(tilesCopy, lastStored)) {
         pastCurrentGridsForUndo = [...pastCurrentGridsForUndo, tilesCopy];
-
-        // Limit history to prevent memory issues (keep last 50 states)
-        if (pastCurrentGridsForUndo.length > 50) {
-          pastCurrentGridsForUndo = pastCurrentGridsForUndo.slice(-50);
-        }
       }
     }
   });
