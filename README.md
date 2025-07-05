@@ -6,14 +6,16 @@ In Sudodle, the player must find a square where each digit appears once on each 
 
 ## Repository Structure
 
-This project is organized into two main components:
+This project is organized into two folders:
 
-- **`study/`** - Python-based analysis tools for game mechanics, puzzle generation algorithms (including a Rust program to mine larger sudodles), and the automated generation of a [puzzle book](./study/sudodles_puzzle_book.pdf)
-- **`sudodle/`** - The complete web application powering [sudodle.app](https://sudodle.app), featuring over 1,500 hand-crafted puzzles and an innovative multi-turn game mode
+- **`puzzle_generation/`** - Scripts to study and generate puzzles.
+  - Optimized Rust scripts to mine new puzzles reasonably fast (particularly useful for Sudodles of size 7 and above)
+  - Python scripts and notebooks t analyze the game, attribute difficulty levels to puzzles, plot puzzles into the [puzzle book](./study/sudodles_puzzle_book.pdf)
+- **`sudodle/`** - The web application [sudodle.app](https://sudodle.app), with thousands of puzzles and a multi-turn game mode
 
 ## Running the web app for development
 
-Run locally with 
+Run the web applocally with 
 
 ```bash
 npm install
