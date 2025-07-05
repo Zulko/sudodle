@@ -7,6 +7,7 @@
     uniformRandomLatinSquare,
     checkLatinSquare,
   } from "./lib/latinSquares.js";
+  import { puzzleData } from "./lib/puzzleData.js";
   import Settings from "./components/Settings.svelte";
   import VictorySection from "./components/VictorySection.svelte";
   import CurrentGrid from "./components/CurrentGrid.svelte";
@@ -32,7 +33,7 @@
   let showSettingsModal = $state(false);
   let isTransitioning = $state(false);
   let currentGridFeedback = $state(null);
-  let puzzles = $state(null);
+  let puzzles = $state(puzzleData);
   let tStart = $state(null);
   let gameEndTime = $state(null);
 
@@ -173,7 +174,6 @@
       settings.puzzleId = urlParams.get("puzzleId");
       settings.gridSize = parseInt(settings.puzzleId[0]);
       settings.mode = "single-turn";
-      puzzles = await loadPuzzles();
       for (const difficulty of ["normal", "hard", "expert"]) {
         if (
           puzzles[settings.gridSize][difficulty]?.includes(settings.puzzleId)
@@ -208,10 +208,7 @@
     solutionGrid = uniformRandomLatinSquare(settings.gridSize, settings.seed);
   }
 
-  async function pickPuzzle() {
-    if (!puzzles) {
-      puzzles = await loadPuzzles();
-    }
+  function pickPuzzle() {
     const puzzlesForGridSizeAndDifficulty =
       puzzles[settings.gridSize]?.[settings.difficulty];
 
@@ -281,38 +278,6 @@
     tilesShownWrong = wrongTiles;
   }
 
-  async function loadPuzzles() {
-    return fetch("puzzles.csv")
-      .then((response) => response.text())
-      .then((text) => {
-        const puzzles = {};
-        const lines = text.trim().split("\n");
-
-        lines.forEach((line) => {
-          if (line.length > 0) {
-            const parts = line.split(",");
-            if (parts.length >= 2) {
-              const compactedPuzzle = parts[0];
-              const difficulty = parts[1];
-              const gridSize = parseInt(compactedPuzzle[0]);
-
-              // Initialize nested structure for this grid size and difficulty if it doesn't exist
-              if (!puzzles[gridSize]) {
-                puzzles[gridSize] = {};
-              }
-              if (!puzzles[gridSize][difficulty]) {
-                puzzles[gridSize][difficulty] = [];
-              }
-
-              puzzles[gridSize][difficulty].push(compactedPuzzle);
-            }
-          }
-        });
-
-        return puzzles;
-      });
-  }
-
   // ===== Visual Cues Update =====
   function updateVisualCues() {
     if (currentGrid.length === 0) {
@@ -378,7 +343,7 @@
 
     if (settings.mode === "single-turn") {
       if (!settings.puzzleId) {
-        await pickPuzzle();
+        pickPuzzle();
       }
       initializeGridFromPuzzleId();
     } else {
